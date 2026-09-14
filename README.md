@@ -120,6 +120,23 @@ python ..\backend\.venv\Scripts\generate_images.py   # hoặc python scripts\gen
 
 > Lưu ý: script imports `seed` từ `backend`, nên chạy với Python có `aiosqlite` (dùng venv của backend).
 
+## Deploy lên Render (production)
+
+**Link public:** https://hanoi-food-app-ttko.onrender.com
+
+Repo GitHub: https://github.com/hieu20tuoi2404-eng/hanoi-food-app
+
+- `Dockerfile` (root) — multi-stage: build frontend bằng Node → backend FastAPI serve cả API + static
+- `render.yaml` — blueprint Web Service (free tier, tự auto-deploy khi push)
+
+Cập nhật code mới: commit + push lên `master` → Render tự build lại. Mọi thay đổi trong `frontend/`, `backend/` đều tự động. Lưu ý free tier: service "ngủ" sau ~15 phút không truy cập, mở lại mất ~30s; SQLite lưu tạm trong container (seed lại sau mỗi restart).
+
+Chạy deploy thủ công bằng Docker:
+```powershell
+docker build -t an-gi-ha-noi .
+docker run -p 8000:8000 an-gi-ha-noi   # mở http://localhost:8000
+```
+
 ## Google Maps
 
 Địa chỉ quán dùng link chuẩn:
