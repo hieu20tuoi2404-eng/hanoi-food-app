@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: an-gi-ha-noi
+    runtime: docker
+    plan: free
+    rootDir: .
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DEMO_MODE
+        value: true

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 420" role="img" aria-label="Cốm làng Vòng">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#FFE8B0"/>
+      <stop offset="100%" stop-color="#F8B052"/>
+    </linearGradient>
+    <radialGradient id="plate" cx="50%" cy="42%" r="60%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#FFF6E3"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="600" height="420" fill="url(#bg)"/>
+
+  <!-- decorative steam -->
+  <path d="M120 90 q12 -16 0 -32 q-12 -16 0 -32" stroke="#FFF6E3" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.5"/>
+  <path d="M290 70 q12 -16 0 -32 q-12 -16 0 -32" stroke="#FFF6E3" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.5"/>
+  <path d="M460 80 q12 -16 0 -32 q-12 -16 0 -32" stroke="#FFF6E3" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.5"/>
+
+  <circle cx="512" cy="95" r="8" fill="#FFF6E3" opacity="0.55"/>
+  <circle cx="80" cy="330" r="6" fill="#FFF6E3" opacity="0.45"/>
+  <circle cx="545" cy="320" r="5" fill="#FFF6E3" opacity="0.5"/>
+
+  <!-- plate -->
+  <ellipse cx="300" cy="250" rx="150" ry="105" fill="url(#plate)" stroke="#ffffff" stroke-width="3"/>
+  <ellipse cx="300" cy="250" rx="118" ry="80" fill="none" stroke="#F8B052" stroke-width="2" opacity="0.35"/>
+
+  <!-- food emoji -->
+  <text x="300" y="275" text-anchor="middle" font-size="150" dominant-baseline="middle">🍙</text>
+
+  <!-- name + label -->
+  <text x="300" y="385" text-anchor="middle" font-size="30" font-weight="700"
+        fill="#7A4300" font-family="'Segoe UI', Arial, sans-serif">Cốm làng Vòng</text>
+  <text x="300" y="408" text-anchor="middle" font-size="14" letter-spacing="3"
+        fill="#7A4300" opacity="0.75" font-family="'Segoe UI', Arial, sans-serif">BỮA SÁNG · DEMO</text>
+
+  <rect x="1" y="1" width="598" height="418" fill="none" stroke="#7A4300" stroke-width="2" opacity="0.35" rx="0"/>
+</svg>

@@ -1,0 +1,28 @@
+# Python
+backend/.venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Data
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Env & secrets
+.env
+.env.local
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local tooling
+tools/
