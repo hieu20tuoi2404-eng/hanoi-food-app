@@ -19,6 +19,7 @@ const KINDS = [
   { id: 'lunch', label: 'Bữa trưa', emoji: '🍚' },
   { id: 'dinner', label: 'Bữa tối', emoji: '🌙' },
   { id: 'snack', label: 'Ăn vặt', emoji: '🍿' },
+  { id: 'drinking', label: 'Món nhậu', emoji: '🍻' },
 ]
 
 const RARITY_TIER = {

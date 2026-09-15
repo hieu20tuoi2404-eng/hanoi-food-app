@@ -18,9 +18,10 @@ const CATEGORIES = [
   { slug: 'lunch', label: 'Bữa trưa' },
   { slug: 'dinner', label: 'Bữa tối' },
   { slug: 'snack', label: 'Ăn vặt' },
+  { slug: 'drinking', label: 'Món nhậu' },
 ]
 
-const CATEGORY_ICONS = { '': '🍽', breakfast: '☀️', lunch: '🍚', dinner: '🌙', snack: '🍿' }
+const CATEGORY_ICONS = { '': '🍽', breakfast: '☀️', lunch: '🍚', dinner: '🌙', snack: '🍿', drinking: '🍻' }
 
 const PRICE_RANGES = {
   '': '',

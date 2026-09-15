@@ -137,11 +137,11 @@ ACHIEVEMENTS: list[dict[str, Any]] = [
     {"key": "first_bite", "name": "Miếng đầu tiên", "desc": "Xem chi tiết một món ăn", "icon": "🍴", "xp": 2},
     {"key": "five_dishes", "name": "Khai vị", "desc": "Xem 5 món ăn khác nhau", "icon": "🍱", "xp": 5},
     {"key": "ten_dishes", "name": "Ăn đa dạng", "desc": "Xem 10 món ăn", "icon": "🍜", "xp": 10},
-    {"key": "all_dishes", "name": "Quán quân nếm thử", "desc": "Xem tất cả 30 món", "icon": "👑", "xp": 30},
+    {"key": "all_dishes", "name": "Quán quân nếm thử", "desc": "Xem tất cả 60 món", "icon": "👑", "xp": 30},
     {"key": "first_review", "name": "Đánh giá đầu tiên", "desc": "Viết một đánh giá", "icon": "✍️", "xp": 3},
     {"key": "five_reviews", "name": "Reviewer cứng", "desc": "Viết 5 đánh giá", "icon": "📝", "xp": 10},
     {"key": "three_districts", "name": "Rong ruổi", "desc": "Xem món từ 3 quận khác nhau", "icon": "🗺", "xp": 5},
-    {"key": "all_meals", "name": "No từ sáng đến tối", "desc": "Xem đủ 4 nhóm bữa", "icon": "⏰", "xp": 8},
+    {"key": "all_meals", "name": "No từ sáng đến tối", "desc": "Xem đủ 5 nhóm bữa", "icon": "⏰", "xp": 8},
     {"key": "rare_finder", "name": "Săn đồ hiếm", "desc": "Xem một món cấp Hiếm trở lên", "icon": "💎", "xp": 5},
     {"key": "legendary_finder", "name": "Chạm tới huyền thoại", "desc": "Xem một món Huyền thoại", "icon": "🌟", "xp": 15},
 ]
@@ -269,6 +269,7 @@ MEAL_TYPES = [
     {"id": "lunch", "label": "Bữa trưa"},
     {"id": "dinner", "label": "Bữa tối"},
     {"id": "snack", "label": "Ăn vặt"},
+    {"id": "drinking", "label": "Món nhậu"},
 ]
 
 

@@ -142,6 +142,7 @@ async def categories() -> list[dict[str, Any]]:
             "lunch": "Bữa trưa",
             "dinner": "Bữa tối",
             "snack": "Ăn vặt",
+            "drinking": "Món nhậu",
         }
         result = []
         async for row in rows:
@@ -160,7 +161,7 @@ async def categories() -> list[dict[str, Any]]:
 
 @app.get("/api/dishes")
 async def list_dishes(
-    meal: str | None = Query(None, description="breakfast|lunch|dinner|snack"),
+    meal: str | None = Query(None, description="breakfast|lunch|dinner|snack|drinking"),
     district: str | None = Query(None, description="Quận/Huyện"),
     min_price: int | None = Query(None, ge=0),
     max_price: int | None = Query(None, ge=0),
@@ -245,7 +246,7 @@ async def random_dish(
 
 @app.get("/api/fortunes")
 async def lunch_fortune(
-    meal: str | None = Query(None, description="breakfast|lunch|dinner|snack"),
+    meal: str | None = Query(None, description="breakfast|lunch|dinner|snack|drinking"),
     budget: int | None = Query(None, description="Tối đa ngân sách (avg_price)"),
 ) -> dict[str, Any]:
     """Quẻ trưa: a random dish + a fun fortune message (demo)."""
@@ -753,6 +754,16 @@ async def _room_payload(room_id: int, db) -> dict[str, Any]:
     async for v in vrows:
         votes_by_dish[v["dish_id"]] = votes_by_dish.get(v["dish_id"], 0) + 1
         voters_by_dish.setdefault(v["dish_id"], []).append(v["voter_name"])
+    # ensure any dish that received a vote appears in the tally even if it
+    # fell outside the random candidate window (max 30)
+    extra_ids = [vid for vid in votes_by_dish if vid not in {p["id"] for p in dish_payloads}]
+    if extra_ids:
+        ph = ",".join("?" * len(extra_ids))
+        erows = await db.execute(
+            f"SELECT d.* FROM dishes d WHERE d.id IN ({ph})", extra_ids
+        )
+        for er in await erows.fetchall():
+            dish_payloads.append(DishSummary(**_decorate_dish(dict(er))).model_dump())
 
     # tally
     tally = []
@@ -1062,7 +1073,7 @@ async def exploration_profile(
             elif key == "ten_dishes":
                 unlocked = viewed_count >= 10
             elif key == "all_dishes":
-                unlocked = viewed_count >= 30
+                unlocked = viewed_count >= 60
             elif key == "first_review":
                 unlocked = reviewed_count >= 1
             elif key == "five_reviews":
@@ -1070,7 +1081,7 @@ async def exploration_profile(
             elif key == "three_districts":
                 unlocked = districts >= 3
             elif key == "all_meals":
-                unlocked = meal_types >= 4
+                unlocked = meal_types >= 5
             elif key == "rare_finder":
                 unlocked = best_tier >= 2
             elif key == "legendary_finder":

@@ -7,6 +7,7 @@ const MEAL_LABELS = {
   lunch: 'Bữa trưa',
   dinner: 'Bữa tối',
   snack: 'Ăn vặt',
+  drinking: 'Món nhậu',
 }
 
 export default function DishCard({ dish }) {

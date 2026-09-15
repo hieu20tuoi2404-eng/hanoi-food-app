@@ -33,6 +33,22 @@ async def init_db() -> None:
     DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
     db = await aiosqlite.connect(str(DATABASE_PATH))
     db.row_factory = aiosqlite.Row
+    # ---- Migration: v2 added the 'drinking' (món nhậu) meal type. ----
+    # Older DBs created dishes with CHECK(... IN ('breakfast','lunch','dinner','snack'))
+    # which rejects new dishes; rebuild the affected tables so the seed re-runs.
+    cur = await db.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='dishes'"
+    )
+    row = await cur.fetchone()
+    if row and row["sql"] and "drinking" not in row["sql"]:
+        await db.execute("PRAGMA foreign_keys=OFF")
+        for t in (
+            "group_votes", "user_mascots", "user_reviews", "user_views",
+            "fate_rolls", "reviews", "recipes", "restaurants",
+            "theme_selections", "zodiac_profiles", "group_rooms", "dishes",
+        ):
+            await db.execute(f"DROP TABLE IF EXISTS {t}")
+        await db.commit()
     await db.executescript(
         """
         CREATE TABLE IF NOT EXISTS dishes (
@@ -40,7 +56,7 @@ async def init_db() -> None:
             name TEXT NOT NULL,
             slug TEXT NOT NULL UNIQUE,
             description TEXT NOT NULL,
-            meal_type TEXT NOT NULL CHECK(meal_type IN ('breakfast','lunch','dinner','snack')),
+            meal_type TEXT NOT NULL CHECK(meal_type IN ('breakfast','lunch','dinner','snack','drinking')),
             image_url TEXT NOT NULL DEFAULT '',
             image_source TEXT NOT NULL DEFAULT 'Demo - Chưa xác minh',
             avg_rating REAL NOT NULL DEFAULT 5.0,

@@ -26,7 +26,7 @@ def client():
         yield c
 
 
-MEALS = ["breakfast", "lunch", "dinner", "snack"]
+MEALS = ["breakfast", "lunch", "dinner", "snack", "drinking"]
 
 
 # ---------- health & categories ----------
@@ -43,7 +43,7 @@ def test_categories_count(client):
     r = client.get("/api/categories")
     assert r.status_code == 200
     cats = r.json()
-    assert len(cats) == 4
+    assert len(cats) == 5
     slugs = {c["slug"] for c in cats}
     assert slugs == set(MEALS)
 
@@ -783,7 +783,7 @@ def test_collection_endpoint(client):
     r = client.get("/api/collection", headers={"X-Session-Id": "collector-1"})
     assert r.status_code == 200
     data = r.json()
-    assert data["total"] == 30
+    assert data["total"] == 60
     assert "cards" in data
     assert all(c["rarity"]["key"] for c in data["cards"])
 

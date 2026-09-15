@@ -11,6 +11,7 @@ export const MEAL_OPTIONS = [
   { slug: 'lunch', label: 'Bữa trưa' },
   { slug: 'dinner', label: 'Bữa tối' },
   { slug: 'snack', label: 'Ăn vặt' },
+  { slug: 'drinking', label: 'Món nhậu' },
 ]
 
 export default function LootBox({ onSpinStart }) {
