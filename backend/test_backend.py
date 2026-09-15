@@ -405,6 +405,98 @@ def test_by_color(client):
 
 
 # ============================================================
+# 2.0: eating-style / mood filters on the list endpoint
+# ============================================================
+
+def test_list_filter_healthy(client):
+    r = client.get("/api/dishes", params={"diet": "healthy"})
+    assert r.status_code == 200
+    dishes = r.json()
+    assert dishes
+    for d in dishes:
+        assert d["healthy_score"] is not None and d["healthy_score"] >= 6
+
+
+def test_list_filter_light_oil(client):
+    r = client.get("/api/dishes", params={"diet": "light_oil"})
+    assert r.status_code == 200
+    dishes = r.json()
+    assert dishes
+    for d in dishes:
+        assert d["oil_level"] in {"low", "medium"}
+
+
+def test_list_filter_rich_oil(client):
+    r = client.get("/api/dishes", params={"diet": "rich_oil"})
+    assert r.status_code == 200
+    dishes = r.json()
+    assert dishes
+    for d in dishes:
+        assert d["oil_level"] == "high"
+
+
+def test_list_filter_vegetarian(client):
+    r = client.get("/api/dishes", params={"diet": "vegetarian"})
+    assert r.status_code == 200
+    dishes = r.json()
+    assert dishes
+    for d in dishes:
+        assert d["vegetarian"] is True
+
+
+def test_list_filter_color(client):
+    r = client.get("/api/dishes", params={"color": "yellow"})
+    assert r.status_code == 200
+    dishes = r.json()
+    assert dishes
+    for d in dishes:
+        assert d["dominant_color"] == "yellow" or "yellow" in d["color_tags"]
+
+
+def test_list_filter_occasion_date(client):
+    r = client.get("/api/dishes", params={"occasion": "date"})
+    assert r.status_code == 200
+    dishes = r.json()
+    assert dishes
+    for d in dishes:
+        detail = client.get(f"/api/dishes/{d['slug']}").json()
+        tags = [t for rs in detail["restaurants"] for t in rs["occasion_tags"]]
+        assert "date" in tags
+
+
+def test_list_filter_occasion_solo(client):
+    r = client.get("/api/dishes", params={"occasion": "solo"})
+    assert r.status_code == 200
+    dishes = r.json()
+    assert dishes
+    for d in dishes:
+        detail = client.get(f"/api/dishes/{d['slug']}").json()
+        tags = [t for rs in detail["restaurants"] for t in rs["occasion_tags"]]
+        assert "solo" in tags
+
+
+def test_list_filter_occasion_drinking(client):
+    r = client.get("/api/dishes", params={"occasion": "drinking"})
+    assert r.status_code == 200
+    dishes = r.json()
+    assert dishes
+    for d in dishes:
+        detail = client.get(f"/api/dishes/{d['slug']}").json()
+        tags = [t for rs in detail["restaurants"] for t in rs["occasion_tags"]]
+        assert "drinking" in tags
+
+
+def test_list_filter_meal_plus_diet(client):
+    r = client.get("/api/dishes", params={"meal": "breakfast", "diet": "healthy"})
+    assert r.status_code == 200
+    dishes = r.json()
+    assert dishes
+    for d in dishes:
+        assert d["meal_type"] == "breakfast"
+        assert d["healthy_score"] >= 6
+
+
+# ============================================================
 # 2.0: zodiac (entertainment only, privacy)
 # ============================================================
 

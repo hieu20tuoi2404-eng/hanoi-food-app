@@ -465,6 +465,56 @@ body {
 }
 
 /* Filter bar */
+.mood-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 0 4px;
+}
+.mood-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.mood-group-label {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  min-width: 86px;
+  padding-top: 6px;
+}
+.mood-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.mood-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.mood-chip:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+.mood-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.mood-chip-icon {
+  font-size: 0.9rem;
+}
 .filter-bar {
   display: flex;
   gap: 12px;
@@ -479,6 +529,72 @@ body {
   font-size: 0.9rem;
   background: var(--card-bg);
   cursor: pointer;
+}
+
+/* Dish card health line */
+.dish-card-health {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 5px;
+}
+.dish-card-health-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent-dark);
+  background: var(--accent-light);
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+.dish-card-health-item.oil-high {
+  color: #92400e;
+  background: #fef3c7;
+}
+.dish-card-health-item.veg {
+  color: #14532d;
+  background: #dcfce7;
+}
+
+/* Nutrition grid (DishDetail) */
+.nutrition-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.nutrition-cell {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card-bg);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: center;
+}
+.nutrition-icon {
+  font-size: 1.4rem;
+}
+.nutrition-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.nutrition-value {
+  font-weight: 800;
+  color: var(--text);
+}
+.nutrition-note {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+.nutrition-note.unverified {
+  color: #92400e;
 }
 
 /* Dish grid */

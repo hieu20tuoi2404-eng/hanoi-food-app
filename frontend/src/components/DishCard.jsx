@@ -44,6 +44,16 @@ export default function DishCard({ dish }) {
           <span className="dish-card-rating">&#9733; {dish.avg_rating.toFixed(1)}/10</span>
           <span className="dish-card-price">{dish.avg_price.toLocaleString('vi-VN')}đ</span>
         </div>
+        <div className="dish-card-health">
+          {dish.healthy_score != null && <span className="dish-card-health-item" title="Điểm healthy">🥗 {dish.healthy_score}/10</span>}
+          {dish.oil_level === 'high' && <span className="dish-card-health-item oil-high" title="Nhiều dầu mỡ">🛢️ nhiều dầu</span>}
+          {dish.oil_level === 'low' && <span className="dish-card-health-item" title="Ít dầu mỡ">🛢️ ít dầu</span>}
+          {dish.spicy_level === 'high' && <span className="dish-card-health-item" title="Cay">🌶 cay</span>}
+          {dish.vegetarian && <span className="dish-card-health-item veg" title="Ăn chay được">🥦 chay</span>}
+          {dish.calories_estimate != null && (
+            <span className="dish-card-health-item" title={dish.calories_source || 'Calories'}>🔥 {dish.calories_estimate} kcal</span>
+          )}
+        </div>
         <div className="dish-card-foot">
           {dish.is_demo && <span className="dish-card-demo">Demo · Chưa xác minh</span>}
           {dish.cuisine && <span className="dish-card-cuisine">{dish.cuisine}{dish.dish_origin && dish.dish_origin !== dish.cuisine ? ` · ${dish.dish_origin}` : ''}</span>}

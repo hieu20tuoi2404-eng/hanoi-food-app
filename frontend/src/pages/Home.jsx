@@ -36,13 +36,16 @@ function toQuery(meal, f, search) {
   if (f.min_price !== undefined && f.min_price !== '') p.set('min_price', f.min_price)
   if (f.max_price !== undefined && f.max_price !== '') p.set('max_price', f.max_price)
   if (f.min_rating) p.set('min_rating', f.min_rating)
+  if (f.diet) p.set('diet', f.diet)
+  if (f.occasion) p.set('occasion', f.occasion)
+  if (f.color) p.set('color', f.color)
   const q = p.toString()
   return q ? `?${q}` : ''
 }
 
 export default function Home() {
   const [meal, setMeal] = useState('')
-  const [filters, setFilters] = useState({ district: '', price: '', min_rating: '' })
+  const [filters, setFilters] = useState({ district: '', price: '', min_rating: '', diet: '', occasion: '', color: '' })
   const [search, setSearch] = useState('')
   const [dishes, setDishes] = useState([])
   const [loading, setLoading] = useState(true)

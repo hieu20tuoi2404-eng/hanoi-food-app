@@ -163,6 +163,9 @@ async def list_dishes(
     max_price: int | None = Query(None, ge=0),
     min_rating: float | None = Query(None, ge=1, le=10),
     search: str | None = Query(None, description="Từ khóa tìm kiếm"),
+    diet: str | None = Query(None, description="healthy|light_oil|rich_oil|high_protein|vegetarian|spicy|light"),
+    occasion: str | None = Query(None, description="Hoàn cảnh đi ăn (tag quán)"),
+    color: str | None = Query(None, description="Màu món ăn"),
 ) -> list[dict[str, Any]]:
     db = await get_db()
     try:
@@ -189,6 +192,10 @@ async def list_dishes(
                 "EXISTS (SELECT 1 FROM restaurants r WHERE r.dish_id = d.id AND r.district = ?)"
             )
             params.append(district)
+
+        fconds, fparams = _build_filters(meal=None, diet=diet, occasion=occasion, color=color)
+        conds += fconds
+        params += fparams
 
         where = " AND ".join(conds) if conds else "1=1"
         query = f"SELECT d.* FROM dishes d WHERE {where} ORDER BY d.avg_rating DESC, d.name"

@@ -116,6 +116,63 @@ export default function DishDetail() {
       </div>
 
       <div className="section">
+        <h2 className="section-title">Dinh dưỡng &amp; phong cách</h2>
+        <div className="nutrition-grid">
+          <div className="nutrition-cell">
+            <span className="nutrition-icon">🔥</span>
+            <span className="nutrition-label">Calories</span>
+            <span className="nutrition-value">
+              {dish.calories_estimate ? `${dish.calories_estimate} kcal` : 'Chưa có thông tin'}
+            </span>
+            {dish.calories_source ? (
+              <span className="nutrition-note">{dish.calories_source}</span>
+            ) : (
+              <span className="nutrition-note unverified">Chưa xác minh</span>
+            )}
+          </div>
+          <div className="nutrition-cell">
+            <span className="nutrition-icon">🛢️</span>
+            <span className="nutrition-label">Dầu mỡ</span>
+            <span className="nutrition-value">{{ low: 'Ít', medium: 'Vừa', high: 'Nhiều' }[dish.oil_level] || dish.oil_level || 'Chưa có thông tin'}</span>
+          </div>
+          <div className="nutrition-cell">
+            <span className="nutrition-icon">🌶</span>
+            <span className="nutrition-label">Vị cay</span>
+            <span className="nutrition-value">{{ none: 'Không cay', low: 'Ít', medium: 'Vừa', high: 'Cay' }[dish.spicy_level] || dish.spicy_level || 'Chưa có thông tin'}</span>
+          </div>
+          <div className="nutrition-cell">
+            <span className="nutrition-icon">💪</span>
+            <span className="nutrition-label">Đạm</span>
+            <span className="nutrition-value">{{ low: 'Ít', medium: 'Vừa', high: 'Nhiều' }[dish.protein_level] || dish.protein_level || 'Chưa có thông tin'}</span>
+          </div>
+          <div className="nutrition-cell">
+            <span className="nutrition-icon">🥦</span>
+            <span className="nutrition-label">Ăn chay</span>
+            <span className="nutrition-value">{dish.vegetarian ? 'Có' : 'Không'}</span>
+          </div>
+          <div className="nutrition-cell">
+            <span className="nutrition-icon">🥗</span>
+            <span className="nutrition-label">Healthy</span>
+            <span className="nutrition-value">{dish.healthy_score != null ? `${dish.healthy_score}/10` : 'Chưa có thông tin'}</span>
+          </div>
+        </div>
+        <div className="detail-source">
+          {dish.verification_status === 'demo'
+            ? 'Dữ liệu dinh dưỡng đang để chế độ demo - chưa xác minh từ nguồn chính thức.'
+            : 'Dữ liệu dinh dưỡng theo metadata món.'}
+        </div>
+        {dish.dominant_color && (
+          <div className="detail-meta-row" style={{ marginTop: 8 }}>
+            <span className="detail-meta-tag" style={{ background: 'var(--border)' }}>
+              Màu nổi bật: {{ red: 'Đỏ', yellow: 'Vàng', green: 'Xanh', white: 'Trắng', brown: 'Nâu', orange: 'Cam', purple: 'Tím', multi: 'Nhiều màu' }[dish.dominant_color] || dish.dominant_color}
+              {dish.color_tags && dish.color_tags.length > 0 ? ` (${dish.color_tags.map((c) => ({ red: 'đỏ', yellow: 'vàng', green: 'xanh', white: 'trắng', brown: 'nâu', orange: 'cam', purple: 'tím', multi: 'nhiều màu' }[c] || c)).join(', ')})` : ''}
+            </span>
+            <span className="detail-meta-tag verify">{dish.color_source || dish.verification_status === 'demo' ? 'Chưa xác minh' : 'Đã xác minh'}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="section">
         <h2 className="section-title">Quán bán món này</h2>
         {dish.restaurants.length === 0 && <div className="empty">Chưa có dữ liệu quán.</div>}
         {dish.restaurants.map((r) => (
