@@ -409,6 +409,229 @@ body {
   border-radius: 10px;
 }
 
+/* ===== Quẻ trưa reel (slot machine) ===== */
+.reel-window {
+  position: relative;
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background:
+    radial-gradient(120% 150% at 50% 0%, rgba(142, 45, 226, 0.1), transparent 62%),
+    var(--bg);
+  padding: 18px 0;
+  min-height: 236px;
+}
+.reel-track {
+  display: flex;
+  gap: 14px;
+  padding: 0 8px;
+  will-change: transform;
+  align-items: stretch;
+}
+.reel-card {
+  position: relative;
+  flex: 0 0 176px;
+  width: 176px;
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 10px 12px;
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.reel-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--rc, #9d998d);
+}
+.reel-card img {
+  width: 100%;
+  height: 104px;
+  object-fit: cover;
+  border-radius: 9px;
+  background: #eee;
+  display: block;
+}
+.reel-card-tier {
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--rc, #9d998d);
+  border: 1px solid var(--rc, #9d998d);
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+.reel-card-name {
+  font-size: 0.88rem;
+  line-height: 1.3;
+}
+.reel-card-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.reel-card-land {
+  box-shadow: 0 0 0 2px var(--rc, #9d998d), 0 6px 20px rgba(0, 0, 0, 0.18);
+  transform: translateY(-3px);
+}
+.reel-selector {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent, #ff3d71 18%, #ff3d71 82%, transparent);
+  z-index: 3;
+  pointer-events: none;
+}
+.reel-selector::before,
+.reel-selector::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+.reel-selector::before {
+  top: 5px;
+  border-top: 10px solid #ff3d71;
+}
+.reel-selector::after {
+  bottom: 5px;
+  border-bottom: 10px solid #ff3d71;
+}
+.reel-fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 64px;
+  z-index: 2;
+  pointer-events: none;
+}
+.reel-fade-left {
+  left: 0;
+  background: linear-gradient(90deg, var(--bg) 0%, transparent 100%);
+}
+.reel-fade-right {
+  right: 0;
+  background: linear-gradient(270deg, var(--bg) 0%, transparent 100%);
+}
+.reel-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+.reel-option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.reel-opt-label {
+  flex: 0 0 auto;
+  width: 78px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.reel-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.reel-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.reel-chip-emoji {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+.reel-chip:hover {
+  border-color: var(--accent);
+}
+.reel-chip.active {
+  background: linear-gradient(135deg, #8e2de2, #b038ff);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(142, 45, 226, 0.3);
+}
+.reel-spin {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 14px;
+  background: linear-gradient(135deg, #ff3d71, #ff6a3d);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(255, 61, 113, 0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.reel-spin:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(255, 61, 113, 0.4);
+}
+.reel-spin:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  transform: none;
+}
+.reel-spinning-hint {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  animation: reel-pulse 1s ease-in-out infinite;
+}
+@keyframes reel-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.quatrua-mascot {
+  margin-top: 12px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 10px;
+}
+@media (max-width: 640px) {
+  .reel-window { min-height: 216px; }
+  .reel-card { flex-basis: 148px; width: 148px; }
+  .reel-card img { height: 88px; }
+  .reel-opt-label { width: 60px; }
+  .reel-fade { width: 40px; }
+}
+
 /* Category buttons */
 .category-bar {
   display: flex;

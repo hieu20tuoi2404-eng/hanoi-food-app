@@ -246,6 +246,7 @@ async def random_dish(
 @app.get("/api/fortunes")
 async def lunch_fortune(
     meal: str | None = Query(None, description="breakfast|lunch|dinner|snack"),
+    budget: int | None = Query(None, description="Tối đa ngân sách (avg_price)"),
 ) -> dict[str, Any]:
     """Quẻ trưa: a random dish + a fun fortune message (demo)."""
     db = await get_db()
@@ -255,6 +256,9 @@ async def lunch_fortune(
         if meal:
             conds.append("meal_type = ?")
             params.append(meal)
+        if budget is not None and budget > 0:
+            conds.append("avg_price > 0 AND avg_price <= ?")
+            params.append(budget)
         where = " AND ".join(conds) if conds else "1=1"
         row = await db.execute(
             f"SELECT * FROM dishes WHERE {where} ORDER BY RANDOM() LIMIT 1", params

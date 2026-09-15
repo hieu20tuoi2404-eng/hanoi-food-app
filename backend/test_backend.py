@@ -341,6 +341,18 @@ def test_fortune_by_meal(client):
     assert r.status_code == 200
 
 
+def test_fortune_respects_budget(client):
+    r = client.get("/api/fortunes", params={"budget": 60000})
+    assert r.status_code == 200
+    data = r.json()
+    assert data["dish"]["avg_price"] <= 60000
+
+
+def test_fortune_budget_no_match_404(client):
+    r = client.get("/api/fortunes", params={"budget": 5})
+    assert r.status_code == 404
+
+
 # ============================================================
 # 2.0: metadata (cuisine, ingredients, verification)
 # ============================================================
