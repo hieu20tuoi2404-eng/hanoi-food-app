@@ -30,12 +30,23 @@ export default function DishCard({ dish }) {
       <div className="dish-card-body">
         <div className="dish-card-name">{dish.name}</div>
         <p className="dish-card-desc">{dish.description}</p>
+
+        {dish.key_ingredients && dish.key_ingredients.length > 0 && (
+          <div className="dish-card-tags">
+            {dish.key_ingredients.slice(0, 3).map((ing, i) => (
+              <span key={i} className="dish-card-tag">{ing}</span>
+            ))}
+            {dish.key_ingredients.length > 3 && <span className="dish-card-tag more">+{dish.key_ingredients.length - 3}</span>}
+          </div>
+        )}
+
         <div className="dish-card-meta">
           <span className="dish-card-rating">&#9733; {dish.avg_rating.toFixed(1)}/10</span>
           <span className="dish-card-price">{dish.avg_price.toLocaleString('vi-VN')}đ</span>
         </div>
         <div className="dish-card-foot">
           {dish.is_demo && <span className="dish-card-demo">Demo · Chưa xác minh</span>}
+          {dish.cuisine && <span className="dish-card-cuisine">{dish.cuisine}{dish.dish_origin && dish.dish_origin !== dish.cuisine ? ` · ${dish.dish_origin}` : ''}</span>}
           <span className="dish-card-open">Xem chi tiết &#8594;</span>
         </div>
       </div>

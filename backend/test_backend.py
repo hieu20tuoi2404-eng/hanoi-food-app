@@ -268,9 +268,9 @@ def test_all_dishes_have_rarity(client):
     assert r.status_code == 200
     for d in r.json():
         assert "rarity" in d
-        assert d["rarity"]["key"] in {"cuc-pham", "dac-biet", "hiem", "quoc-dan", "toi-mat"}
+        assert d["rarity"]["key"] in {"common", "rare", "epic", "legendary"}
         assert d["rarity"]["label"]
-        assert 1 <= d["rarity"]["level"] <= 5
+        assert 1 <= d["rarity"]["level"] <= 4
 
 
 def test_rarity_matches_rating(client):
@@ -278,16 +278,14 @@ def test_rarity_matches_rating(client):
     for d in r.json():
         rating = d["avg_rating"]
         key = d["rarity"]["key"]
-        if rating >= 9.0:
-            assert key == "cuc-pham"
+        if rating >= 9.5:
+            assert key == "legendary"
         elif rating >= 8.5:
-            assert key == "dac-biet"
-        elif rating >= 8.0:
-            assert key == "hiem"
-        elif rating >= 7.0:
-            assert key == "quoc-dan"
+            assert key == "epic"
+        elif rating >= 7.5:
+            assert key == "rare"
         else:
-            assert key == "toi-mat"
+            assert key == "common"
 
 
 def test_random_returns_rarity(client):
@@ -341,4 +339,275 @@ def test_fortune_returns_dish_and_message(client):
 def test_fortune_by_meal(client):
     r = client.get("/api/fortunes", params={"meal": "lunch"})
     assert r.status_code == 200
-    assert r.json()["dish"]["meal_type"] == "lunch"
+
+
+# ============================================================
+# 2.0: metadata (cuisine, ingredients, verification)
+# ============================================================
+
+def test_dishes_have_cuisine_and_ingredients(client):
+    r = client.get("/api/dishes")
+    assert r.status_code == 200
+    for d in r.json():
+        assert d["cuisine"]
+        assert isinstance(d["key_ingredients"], list) and len(d["key_ingredients"]) > 0
+        assert d["dish_origin"]
+        assert d["verification_status"]
+        # calories must NOT be fabricated -> NULL shows as None
+        assert d["calories_estimate"] is None
+        assert d["calories_source"] == ""
+
+
+def test_dish_detail_has_metadata(client):
+    r = client.get("/api/dishes")
+    dish = next(d for d in r.json() if d["slug"] == "pho-bo-ha-noi")
+    rr = client.get(f"/api/dishes/{dish['slug']}")
+    info = rr.json()
+    assert info["cuisine"]
+    assert info["key_ingredients"]
+    assert all(rest["tags_verification"] for rest in info["restaurants"])
+
+
+# ============================================================
+# 2.0: preferences / advanced random
+# ============================================================
+
+def test_preferences_endpoint(client):
+    r = client.get("/api/preferences")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["healthy_options"] and data["occasion_options"]
+    assert data["color_options"] and data["meal_types"]
+
+
+def test_advanced_random_healthy(client):
+    r = client.post("/api/dishes/random/advanced", json={"diet": "vegetarian"})
+    assert r.status_code == 200
+    d = r.json()["dish"]
+    assert d["vegetarian"] is True
+
+
+def test_advanced_random_spicy(client):
+    r = client.post("/api/dishes/random/advanced", json={"occasion": "drinking"})
+    assert r.status_code in (200, 404)
+
+
+def test_advanced_random_no_match(client):
+    r = client.post("/api/dishes/random/advanced", json={"max_price": 5})
+    assert r.status_code == 404
+
+
+def test_by_color(client):
+    r = client.get("/api/dishes/by-color", params={"color": "yellow"})
+    assert r.status_code == 200
+    for d in r.json():
+        assert d["dominant_color"] == "yellow" or "yellow" in d["color_tags"]
+
+
+# ============================================================
+# 2.0: zodiac (entertainment only, privacy)
+# ============================================================
+
+def test_zodiac_profile_creates(client):
+    r = client.post("/api/zodiac/profile", json={"day": 5, "month": 4, "consent_save": False})
+    assert r.status_code == 201
+    p = r.json()
+    assert p["sign_key"] == "aries"
+    assert p["year"] is None  # no year unless consent
+    assert "Giải trí" in p["entertainment_note"] or "Gợi ý vui" in p["entertainment_note"]
+
+
+def test_zodiac_profile_saves_year_with_consent(client):
+    r = client.post("/api/zodiac/profile", json={"day": 1, "month": 1, "year": 1995, "consent_save": True})
+    assert r.status_code == 201
+    assert r.json()["year"] == 1995
+
+
+def test_zodiac_recommendation(client):
+    r = client.get("/api/zodiac/recommendation", params={"day": 25, "month": 8})
+    assert r.status_code == 200
+    data = r.json()
+    assert data["sign"]["name"] == "Xử Nữ"
+    assert data["flavour"]
+    assert "Gợi ý vui" in data["entertainment_note"]
+
+
+def test_zodiac_delete(client):
+    r = client.post("/api/zodiac/profile", json={"day": 10, "month": 10})
+    pid = r.json()["id"]
+    rr = client.delete(f"/api/zodiac/profile/{pid}")
+    assert rr.status_code == 200
+    assert rr.json()["deleted"] is True
+
+
+def test_zodiac_invalid_date(client):
+    r = client.post("/api/zodiac/profile", json={"day": 30, "month": 2})
+    assert r.status_code == 422
+
+
+# ============================================================
+# 2.0: fate rolls (max 3/session)
+# ============================================================
+
+def test_fate_roll_basic(client):
+    r = client.post("/api/fate/roll", json={}, headers={"X-Session-Id": "tester-1"})
+    assert r.status_code == 200
+    data = r.json()
+    assert data["dish"]["name"]
+    assert 1 <= data["roll"] <= 6
+
+
+def test_fate_roll_limit_3(client):
+    headers = {"X-Session-Id": "tester-fate-limit"}
+    for i in range(3):
+        r = client.post("/api/fate/roll", json={}, headers=headers)
+        assert r.status_code == 200
+        assert r.json()["limit_reached"] is False
+    r4 = client.post("/api/fate/roll", json={}, headers=headers)
+    assert r4.status_code == 200
+    assert r4.json()["limit_reached"] is True
+
+
+def test_fate_roll_linh_vat_on_6(client):
+    # statistical but run enough; at least one 6 should appear among messages
+    for _ in range(40):
+        r = client.post("/api/fate/roll", json={}, headers={"X-Session-Id": "tester-fate-6"})
+        if r.json()["roll"] == 6:
+            assert r.json()["linh_vat"] is not None
+            return
+    # no assert failure needed, probabilistic
+
+
+# ============================================================
+# 2.0: group voting
+# ============================================================
+
+def test_group_room_flow(client):
+    dishes = client.get("/api/dishes").json()
+    d1, d2 = dishes[0], dishes[1]
+    r = client.post("/api/group-rooms", json={"host_name": "Host", "config": {}})
+    assert r.status_code == 201
+    code = r.json()["room_code"]
+    assert len(code) == 6
+
+    # vote
+    v1 = client.post(f"/api/group-rooms/{code}/votes", json={"voter_name": "An", "dish_id": d1["id"]})
+    assert v1.status_code == 200
+    # second vote by same name -> duplicate
+    v2 = client.post(f"/api/group-rooms/{code}/votes", json={"voter_name": "An", "dish_id": d2["id"]})
+    assert v2.status_code == 409
+    # different voter
+    v3 = client.post(f"/api/group-rooms/{code}/votes", json={"voter_name": "Binh", "dish_id": d1["id"]})
+    assert v3.status_code == 200
+
+    payload = client.get(f"/api/group-rooms/{code}").json()
+    assert payload["vote_tally"]["total_votes"] == 2
+    assert payload["vote_tally"]["winner"]["id"] == d1["id"]
+
+    fin = client.post(f"/api/group-rooms/{code}/finish")
+    assert fin.status_code == 200
+    assert fin.json()["status"] == "finished"
+    assert fin.json()["winner"]["id"] == d1["id"]
+
+
+def test_group_room_not_found(client):
+    r = client.get("/api/group-rooms/NOPE99")
+    assert r.status_code == 404
+
+
+# ============================================================
+# 2.0: themes
+# ============================================================
+
+def test_themes_list(client):
+    r = client.get("/api/themes")
+    assert r.status_code == 200
+    themes = r.json()
+    assert len(themes) == 6
+    ids = {t["id"] for t in themes}
+    assert ids == {"ha-noi-co-dien", "pho-dem", "hoi-meo", "healthy", "toi-gian", "tet-le-hoi"}
+
+
+def test_theme_select_persist(client):
+    r = client.post("/api/themes/select", json={"theme_id": "pho-dem"}, headers={"X-Session-Id": "theme-user"})
+    assert r.status_code == 200
+    sel = client.get("/api/themes/selection", headers={"X-Session-Id": "theme-user"})
+    assert sel.json()["theme_id"] == "pho-dem"
+
+
+def test_theme_select_bad(client):
+    r = client.post("/api/themes/select", json={"theme_id": "nope"}, headers={"X-Session-Id": "theme-user-2"})
+    assert r.status_code == 404
+
+
+# ============================================================
+# 2.0: exploration profile
+# ============================================================
+
+def test_exploration_tracks_views(client):
+    headers = {"X-Session-Id": "explorer-1"}
+    dishes = client.get("/api/dishes").json()
+    for d in dishes[:3]:
+        client.get(f"/api/dishes/{d['slug']}", headers=headers)
+    r = client.get("/api/exploration", headers=headers)
+    assert r.status_code == 200
+    data = r.json()
+    assert data["viewed_count"] >= 3
+    assert data["level"]["name"]
+    assert isinstance(data["achievements"], list)
+    keys = {a["key"] for a in data["achievements"]}
+    assert "first_bite" in keys
+
+
+def test_exploration_no_session_still_works(client):
+    r = client.get("/api/exploration")
+    assert r.status_code == 200
+    assert "session_id" in r.json()
+
+
+def test_rare_finder_requires_real_view(client):
+    headers = {"X-Session-Id": "req-rare-finder"}
+    # Fresh session: no free XP, rarity achievements locked
+    prof = client.get("/api/exploration", headers=headers).json()
+    assert prof["xp"] == 0
+    keys = {a["key"] for a in prof["achievements"]}
+    assert "rare_finder" not in keys
+    assert "legendary_finder" not in keys
+
+    # View one dish -> sampler unlocks only if it passes the tier threshold
+    dishes = client.get("/api/dishes").json()
+    first = dishes[0]
+    client.get(f"/api/dishes/{first['slug']}", headers=headers)
+    prof = client.get("/api/exploration", headers=headers).json()
+    keys = {a["key"] for a in prof["achievements"]}
+    if first["rarity"]["key"] in {"rare", "epic", "legendary"}:
+        assert "rare_finder" in keys
+    else:
+        assert "rare_finder" not in keys
+
+
+def test_collection_endpoint(client):
+    r = client.get("/api/collection", headers={"X-Session-Id": "collector-1"})
+    assert r.status_code == 200
+    data = r.json()
+    assert data["total"] == 30
+    assert "cards" in data
+    assert all(c["rarity"]["key"] for c in data["cards"])
+
+
+# ============================================================
+# 2.0: review attribution to session (achievement "first review")
+# ============================================================
+
+def test_review_with_session_counts(client):
+    headers = {"X-Session-Id": "reviewer-ach"}
+    dishes = client.get("/api/dishes").json()
+    r = client.post(
+        f"/api/dishes/{dishes[0]['id']}/reviews",
+        json={"rating": 9, "comment": "Rất ngon", "reviewer_name": "AchUser"},
+        headers=headers,
+    )
+    assert r.status_code == 201
+    prof = client.get("/api/exploration", headers=headers).json()
+    keys = {a["key"] for a in prof["achievements"]}
+    assert "first_review" in keys

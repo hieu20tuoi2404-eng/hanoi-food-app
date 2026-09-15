@@ -43,9 +43,9 @@ export default function FilterBar({ filters, onChange }) {
 
       <select value={filters.min_rating || ''} onChange={(e) => set('min_rating', e.target.value)}>
         <option value="">Mọi điểm</option>
-        <option value="9">CỰC PHẨM: 9/10 trở lên</option>
+        <option value="9">SỬ THI: 9/10 trở lên</option>
         <option value="8">HIẾM: 8/10 trở lên</option>
-        <option value="7">QUỐC DÂN: 7/10 trở lên</option>
+        <option value="7">THƯỜNG: 7/10 trở lên</option>
       </select>
     </div>
   )

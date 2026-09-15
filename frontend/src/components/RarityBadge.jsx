@@ -1,16 +1,15 @@
 import React from 'react'
 
 export const RARITY_STYLES = {
-  'cuc-pham': { cls: 'rarity-cuc-pham', icon: '💎' },
-  'dac-biet': { cls: 'rarity-dac-biet', icon: '🌟' },
-  'hiem': { cls: 'rarity-hiem', icon: '✨' },
-  'quoc-dan': { cls: 'rarity-quoc-dan', icon: '🍜' },
-  'toi-mat': { cls: 'rarity-toi-mat', icon: '🎭' },
+  legendary: { cls: 'rarity-legendary', icon: '🌟' },
+  epic: { cls: 'rarity-epic', icon: '💎' },
+  rare: { cls: 'rarity-rare', icon: '✨' },
+  common: { cls: 'rarity-common', icon: '🍜' },
 }
 
 export default function RarityBadge({ rarity }) {
   if (!rarity || !rarity.key) return null
-  const style = RARITY_STYLES[rarity.key] || RARITY_STYLES['toi-mat']
+  const style = RARITY_STYLES[rarity.key] || RARITY_STYLES['common']
   return (
     <span className={`rarity-badge ${style.cls}`}>
       <span className="rarity-icon">{style.icon}</span>

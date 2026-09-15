@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import RarityBadge from '../components/RarityBadge'
-
-const API = import.meta.env.VITE_API_BASE || ''
+import { api, getSessionId } from '../api'
 
 export default function DishDetail() {
   const { slug } = useParams()
@@ -21,7 +20,10 @@ export default function DishDetail() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch(`${API}/api/dishes/${slug}`)
+      // pass X-Session-Id so view is tracked
+      const res = await fetch(`${import.meta.env.VITE_API_BASE || ''}/api/dishes/${slug}`, {
+        headers: { 'X-Session-Id': getSessionId() },
+      })
       if (!res.ok) throw new Error('Không tìm thấy món ăn')
       setDish(await res.json())
     } catch (e) {
@@ -40,7 +42,7 @@ export default function DishDetail() {
     setFormMsg('')
     setFormError('')
     try {
-      const res = await fetch(`${API}/api/dishes/${dish.id}/reviews`, {
+      const created = await api(`/api/dishes/${dish.id}/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -49,11 +51,6 @@ export default function DishDetail() {
           reviewer_name: name.trim() || 'Ẩn danh',
         }),
       })
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.detail || 'Đánh giá không hợp lệ')
-      }
-      const created = await res.json()
       setDish((old) => ({
         ...old,
         reviews: [created, ...(old.reviews || [])],
@@ -70,11 +67,18 @@ export default function DishDetail() {
   if (error) return <div className="empty">{error}<br /><Link className="back-link" to="/">&#8592; Về trang chủ</Link></div>
   if (!dish) return null
 
+  const rarityKey = dish.rarity?.key
+  const rarityBorder =
+    rarityKey === 'legendary' ? '#f8b500'
+      : rarityKey === 'epic' ? '#8e2de2'
+      : rarityKey === 'rare' ? '#3b82f6'
+      : undefined
+
   return (
     <div>
       <Link to="/" className="back-link">&#8592; Về trang chủ</Link>
 
-      <div className="detail-header">
+      <div className="detail-header" style={rarityBorder ? { borderLeft: `5px solid ${rarityBorder}`, paddingLeft: 18 } : undefined}>
         <img
           src={dish.image_url || '/images/fallback.svg'}
           alt={dish.name}
@@ -89,6 +93,22 @@ export default function DishDetail() {
           <h1>{dish.name}</h1>
           <div className="detail-rating">&#9733; {dish.avg_rating.toFixed(1)}/10 &middot; {dish.avg_price.toLocaleString('vi-VN')}đ</div>
           <div className="detail-desc">{dish.description}</div>
+
+          <div className="detail-meta-row">
+            {dish.cuisine && (
+              <span className="detail-meta-tag">{dish.cuisine}{dish.dish_origin && dish.dish_origin !== dish.cuisine ? ` · ${dish.dish_origin}` : ''}</span>
+            )}
+            {dish.verification_status && (
+              <span className="detail-meta-tag verify">{dish.verification_status === 'demo' ? 'Chưa xác minh' : dish.verification_status}</span>
+            )}
+          </div>
+
+          {dish.key_ingredients && dish.key_ingredients.length > 0 && (
+            <div className="detail-ingredients">
+              <b>Thành phần:</b> {dish.key_ingredients.join(', ')}
+            </div>
+          )}
+
           {dish.image_source && (
             <div className="detail-source">Nguồn ảnh: {dish.image_source}</div>
           )}
@@ -104,6 +124,12 @@ export default function DishDetail() {
             <p>Địa chỉ: {r.address} ({r.district})</p>
             <p>Giờ mở cửa: {r.hours}</p>
             <p>Giá tham khảo: {r.price_range}</p>
+            {r.occasion_tags && r.occasion_tags.length > 0 && (
+              <p className="restaurant-occasions">
+                Phù hợp: {r.occasion_tags.map((t) => ({ solo: 'Một mình', quick: 'Ăn nhanh', date: 'Date', friends: 'Bạn bè', family: 'Gia đình', drinking: 'Nhậu', work: 'Làm việc' }[t] || t)).join(', ')}
+                <span className="dish-card-demo" style={{ marginLeft: 6 }}>Chưa xác minh</span>
+              </p>
+            )}
             <a href={r.maps_link} target="_blank" rel="noreferrer">Mở Google Maps &#8599;</a>
             {r.is_demo && <span className="dish-card-demo" style={{ marginLeft: 8 }}>Chưa xác minh</span>}
           </div>

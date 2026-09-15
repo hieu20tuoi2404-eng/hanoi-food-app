@@ -3,6 +3,10 @@ import DishCard from '../components/DishCard'
 import FilterBar from '../components/FilterBar'
 import LootBox from '../components/LootBox'
 import QuaTrua from '../components/QuaTrua'
+import ExplorationProfile from '../components/ExplorationProfile'
+import ZodiacWidget from '../components/ZodiacWidget'
+import FateDice from '../components/FateDice'
+import GroupVote from '../components/GroupVote'
 import { Link } from 'react-router-dom'
 
 const API = import.meta.env.VITE_API_BASE || ''
@@ -95,6 +99,16 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Drivable widget row */}
+      <div className="widgets-row">
+        <FateDice />
+        <ZodiacWidget />
+        <GroupVote />
+      </div>
+
+      {/* Exploration profile */}
+      <ExplorationProfile />
 
       {/* Loot box */}
       <LootBox />

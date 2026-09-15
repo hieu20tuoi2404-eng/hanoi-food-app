@@ -890,6 +890,80 @@ DISHES: list[dict] = [
     },
 ]
 
+# ---- Dish metadata (slug → healthy/oil/spicy/color/cuisine/ingredients info, all "demo" verified) ----
+DISH_META: dict[str, dict] = {
+    # Breakfast
+    "pho-bo-ha-noi":      {"healthy_score": 6, "oil_level": "medium", "spicy_level": "none",   "vegetarian": False, "protein_level": "high",   "dominant_color": "brown",  "color_tags": ["brown","white"], "cuisine": "Việt Nam",  "key_ingredients": ["Bánh phở", "Bò", "Xương bò", "Quế", "Hành tây", "Gừng"], "dish_origin": "Hà Nội"},
+    "bun-cha":             {"healthy_score": 5, "oil_level": "medium", "spicy_level": "medium", "vegetarian": False, "protein_level": "high",   "dominant_color": "brown",  "color_tags": ["brown","yellow"], "cuisine": "Việt Nam",  "key_ingredients": ["Bún", "Thịt ba chỉ nướng", "Chả viên", "Nước mắm chua ngọt", "Rau sống"], "dish_origin": "Hà Nội"},
+    "banh-cuon":           {"healthy_score": 7, "oil_level": "low",    "spicy_level": "none",   "vegetarian": False, "protein_level": "medium", "dominant_color": "white",  "color_tags": ["white"], "cuisine": "Việt Nam",  "key_ingredients": ["Bột gạo", "Thịt băm", "Mộc nhĩ", "Hành phi", "Nước mắm"], "dish_origin": "Bắc Bộ"},
+    "xoi-xeo":             {"healthy_score": 5, "oil_level": "low",    "spicy_level": "none",   "vegetarian": False, "protein_level": "low",    "dominant_color": "yellow", "color_tags": ["yellow"], "cuisine": "Việt Nam",  "key_ingredients": ["Gạo nếp", "Đậu xanh", "Hành phi", "Ruốc", "Giò lụa"], "dish_origin": "Hà Nội"},
+    "banh-mi-pate":        {"healthy_score": 5, "oil_level": "medium", "spicy_level": "none",   "vegetarian": False, "protein_level": "medium", "dominant_color": "yellow", "color_tags": ["yellow","brown"], "cuisine": "Việt Nam",  "key_ingredients": ["Bánh mì", "Patê", "Thịt nguội", "Pơ lai", "Dưa chuột", "Rau sống"], "dish_origin": "Việt Nam"},
+    "pho-ga":              {"healthy_score": 7, "oil_level": "low",    "spicy_level": "none",   "vegetarian": False, "protein_level": "high",   "dominant_color": "white",  "color_tags": ["white","yellow"], "cuisine": "Việt Nam",  "key_ingredients": ["Gà ta", "Bánh phở", "Gừng", "Hành tây", "Rau mùi"], "dish_origin": "Hà Nội"},
+    "chao-suon":           {"healthy_score": 7, "oil_level": "low",    "spicy_level": "none",   "vegetarian": False, "protein_level": "medium", "dominant_color": "white",  "color_tags": ["white"], "cuisine": "Việt Nam",  "key_ingredients": ["Gạo tẻ", "Sườn non", "Gừng", "Quẩy"], "dish_origin": "Hà Nội"},
+    "banh-bao":            {"healthy_score": 5, "oil_level": "medium", "spicy_level": "none",   "vegetarian": False, "protein_level": "medium", "dominant_color": "white",  "color_tags": ["white"], "cuisine": "Việt Nam",  "key_ingredients": ["Bột bánh bao", "Thịt xay", "Mộc nhĩ", "Trứng cút", "Nấm hương"], "dish_origin": "Trung Quốc (du nhập)"},
+    "mi-van-than":         {"healthy_score": 6, "oil_level": "medium", "spicy_level": "none",   "vegetarian": False, "protein_level": "high",   "dominant_color": "yellow", "color_tags": ["yellow","white"], "cuisine": "Trung Hoa",  "key_ingredients": ["Mì tươi", "Tôm", "Thịt nạc", "Mộc nhĩ", "Xương ống"], "dish_origin": "Hoa (Quảng Đông) du nhập"},
+    "com-lang-vong":       {"healthy_score": 6, "oil_level": "low",    "spicy_level": "none",   "vegetarian": True,  "protein_level": "low",    "dominant_color": "green",  "color_tags": ["green"], "cuisine": "Việt Nam",  "key_ingredients": ["Cốm tươi", "Đậu xanh", "Dừa nạo", "Đường", "Lá sen"], "dish_origin": "Làng Vòng, Hà Nội"},
+    # Lunch
+    "bun-bo-nam-bo":       {"healthy_score": 6, "oil_level": "low",    "spicy_level": "medium", "vegetarian": False, "protein_level": "high",   "dominant_color": "brown",  "color_tags": ["brown","white"], "cuisine": "Việt Nam",  "key_ingredients": ["Bún", "Thịt bò xào", "Đậu phộng", "Rau sống", "Nước mắm"], "dish_origin": "TP. Hồ Chí Minh"},
+    "com-tam-suon-nuong":  {"healthy_score": 5, "oil_level": "medium", "spicy_level": "none",   "vegetarian": False, "protein_level": "high",   "dominant_color": "brown",  "color_tags": ["brown","yellow"], "cuisine": "Việt Nam",  "key_ingredients": ["Cơm tấm", "Sườn nướng", "Bì heo", "Trứng", "Mỡ hành"], "dish_origin": "Miền Nam"},
+    "bun-oc":              {"healthy_score": 6, "oil_level": "medium", "spicy_level": "medium", "vegetarian": False, "protein_level": "medium", "dominant_color": "orange", "color_tags": ["orange","brown"], "cuisine": "Việt Nam",  "key_ingredients": ["Ốc", "Cà chua", "Me", "Đậu phụ", "Tía tô"], "dish_origin": "Hà Nội"},
+    "banh-da-cua":         {"healthy_score": 6, "oil_level": "medium", "spicy_level": "none",   "vegetarian": False, "protein_level": "high",   "dominant_color": "orange", "color_tags": ["orange","red"], "cuisine": "Việt Nam",  "key_ingredients": ["Bánh đa đỏ", "Cua bể", "Gạch cua", "Rau muống", "Hành khô"], "dish_origin": "Hải Phòng - Hà Nội"},
+    "nem-chua-ran":        {"healthy_score": 4, "oil_level": "high",   "spicy_level": "none",   "vegetarian": False, "protein_level": "medium", "dominant_color": "brown",  "color_tags": ["brown"], "cuisine": "Việt Nam",  "key_ingredients": ["Thịt lợn", "Bì heo", "Tỏi ớt", "Bột chiên", "Lá chuối"], "dish_origin": "Thanh Hóa"},
+    "pho-xao":             {"healthy_score": 5, "oil_level": "medium", "spicy_level": "none",   "vegetarian": False, "protein_level": "high",   "dominant_color": "brown",  "color_tags": ["brown","white"], "cuisine": "Việt Nam",  "key_ingredients": ["Bánh phở", "Thịt bò", "Rau cải", "Tương đen", "Dầu hào"], "dish_origin": "Việt Nam"},
+    "cha-ca-la-vong":      {"healthy_score": 7, "oil_level": "medium", "spicy_level": "none",   "vegetarian": False, "protein_level": "high",   "dominant_color": "yellow", "color_tags": ["yellow","green"], "cuisine": "Việt Nam",  "key_ingredients": ["Cá Basa/lăng", "Nghệ", "Thì là", "Mẻ", "Bún", "Đậu phộng"], "dish_origin": "Hà Nội"},
+    "bun-thang":           {"healthy_score": 6, "oil_level": "low",    "spicy_level": "none",   "vegetarian": False, "protein_level": "high",   "dominant_color": "white",  "color_tags": ["white","yellow"], "cuisine": "Việt Nam",  "key_ingredients": ["Bún", "Gà xé", "Trứng thái sợi", "Giăm bông", "Hành khô"], "dish_origin": "Hà Nội"},
+    # Dinner
+    "lau-bo-nhung-me":     {"healthy_score": 6, "oil_level": "medium", "spicy_level": "none",   "vegetarian": False, "protein_level": "high",   "dominant_color": "red",    "color_tags": ["red","brown"], "cuisine": "Việt Nam",  "key_ingredients": ["Thịt bò", "Mẻ", "Rau cải", "Nấm kim châm", "Bún"], "dish_origin": "Hà Nội"},
+    "nuong-bbq":           {"healthy_score": 4, "oil_level": "high",   "spicy_level": "none",   "vegetarian": False, "protein_level": "high",   "dominant_color": "brown",  "color_tags": ["brown","red"], "cuisine": "Đa quốc gia", "key_ingredients": ["Thịt bò", "Tôm", "Mực", "Rau củ", "Than hoa"], "dish_origin": "Ẩm thực nướng phổ biến"},
+    "bun-rieu-cua":        {"healthy_score": 6, "oil_level": "medium", "spicy_level": "medium", "vegetarian": False, "protein_level": "medium", "dominant_color": "orange", "color_tags": ["orange","red"], "cuisine": "Việt Nam",  "key_ingredients": ["Cua đồng", "Cà chua", "Me", "Đậu phụ", "Rau muống"], "dish_origin": "Đồng bằng Bắc Bộ"},
+    "vit-quay":            {"healthy_score": 5, "oil_level": "medium", "spicy_level": "none",   "vegetarian": False, "protein_level": "high",   "dominant_color": "brown",  "color_tags": ["brown"], "cuisine": "Việt Nam",  "key_ingredients": ["Vịt", "Ngũ vị hương", "Mật ong", "Nước tương"], "dish_origin": "Việt Nam"},
+    "thit-kho-trung-vit":  {"healthy_score": 4, "oil_level": "medium", "spicy_level": "none",   "vegetarian": False, "protein_level": "high",   "dominant_color": "brown",  "color_tags": ["brown"], "cuisine": "Việt Nam",  "key_ingredients": ["Thịt ba chỉ", "Trứng vịt/gà", "Nước mắm", "Nước dừa", "Đường"], "dish_origin": "Nam Bộ (phổ biến cả miền Bắc)"},
+    "cha-gio-tom":         {"healthy_score": 4, "oil_level": "high",   "spicy_level": "none",   "vegetarian": False, "protein_level": "medium", "dominant_color": "brown",  "color_tags": ["brown","yellow"], "cuisine": "Việt Nam",  "key_ingredients": ["Tôm", "Thịt xay", "Miến", "Nấm hương", "Bánh tráng"], "dish_origin": "Việt Nam"},
+    # Snack
+    "banh-goi":            {"healthy_score": 4, "oil_level": "high",   "spicy_level": "none",   "vegetarian": False, "protein_level": "low",    "dominant_color": "brown",  "color_tags": ["brown"], "cuisine": "Việt Nam",  "key_ingredients": ["Bột mì", "Thịt xay", "Miến", "Mộc nhĩ", "Trứng cút"], "dish_origin": "Hà Nội"},
+    "trung-vit-lon":       {"healthy_score": 7, "oil_level": "low",    "spicy_level": "none",   "vegetarian": False, "protein_level": "high",   "dominant_color": "white",  "color_tags": ["white"], "cuisine": "Việt Nam",  "key_ingredients": ["Trứng vịt lộn", "Rau răm", "Muối tiêu chanh"], "dish_origin": "Việt Nam"},
+    "banh-trang-tron":     {"healthy_score": 5, "oil_level": "low",    "spicy_level": "medium", "vegetarian": False, "protein_level": "low",    "dominant_color": "multi",  "color_tags": ["yellow","orange","white"], "cuisine": "Việt Nam",  "key_ingredients": ["Bánh tráng", "Xoài xanh", "Trứng cút", "Đậu phộng", "Rau răm", "Sa tế"], "dish_origin": "Miền Nam"},
+    "xoi-xeo-via-he":      {"healthy_score": 5, "oil_level": "low",    "spicy_level": "none",   "vegetarian": False, "protein_level": "low",    "dominant_color": "yellow", "color_tags": ["yellow"], "cuisine": "Việt Nam",  "key_ingredients": ["Xôi xéo", "Hành phi", "Ruốc", "Dưa chuột"], "dish_origin": "Hà Nội"},
+    "nem-chua-thanh-hoa":  {"healthy_score": 5, "oil_level": "low",    "spicy_level": "none",   "vegetarian": False, "protein_level": "medium", "dominant_color": "brown",  "color_tags": ["brown","pink"], "cuisine": "Việt Nam",  "key_ingredients": ["Thịt heo nạc", "Bì heo", "Tỏi", "Ớt", "Lá chuối"], "dish_origin": "Thanh Hóa"},
+    "banh-ran":            {"healthy_score": 4, "oil_level": "medium", "spicy_level": "none",   "vegetarian": True,  "protein_level": "low",    "dominant_color": "yellow", "color_tags": ["yellow","brown"], "cuisine": "Việt Nam",  "key_ingredients": ["Bột nếp", "Đậu xanh", "Đường", "Mè"], "dish_origin": "Hà Nội"},
+}
+
+# ---- Restaurant occasion tags (demo-verified only, not inferred from name) ----
+REST_TAGS: dict[str, dict] = {
+    "Phở Gia Truyền":             {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Phở Thìn":                   {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Bún Chả Hương Liên":         {"occasion_tags": ["solo","date","friends","family","quick"], "tags_verification": "demo"},
+    "Bún Chả Đắc Kim":           {"occasion_tags": ["solo","date","friends","quick"],          "tags_verification": "demo"},
+    "Bánh Cuốn Bà Hanh":          {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Xôi Yến":                    {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Bánh Mì 25":                 {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Phở Gà Thìn Bờ Hồ":         {"occasion_tags": ["solo","date","quick"],   "tags_verification": "demo"},
+    "Cháo Sườn Sụn Cây Bàng":     {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Bánh Bao Cô Lan":            {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Mì Vằn Thắn Thọ Xương":     {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Cốm Làng Vòng":              {"occasion_tags": ["solo","date"],           "tags_verification": "demo"},
+    "Bún Bò Nam Bộ 67 Hàng Điếu":{"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Cơm Tấm Phúc":               {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Bún Ốc Cô Hạnh":            {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Bánh Đa Cua Hàng Kênh":     {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Nem Rán Bà Phượng":         {"occasion_tags": ["solo","quick","late_night"], "tags_verification": "demo"},
+    "Phở Xào 88 Hàng Đậu":      {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Chả Cá Lã Vọng":            {"occasion_tags": ["date","friends","work"],  "tags_verification": "demo"},
+    "Bún Thang Bà Đức":          {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Lẩu Bò Nhúng Mẻ 34 Hàng Tre": {"occasion_tags": ["date","friends","family","drinking"], "tags_verification": "demo"},
+    "Vườn Nướng Thả Ga":         {"occasion_tags": ["friends","family","drinking","outdoor"],  "tags_verification": "demo"},
+    "Bún Riêu Cua 34 Hàng Bông": {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Vịt Quay Vân Đình":         {"occasion_tags": ["date","friends","family"], "tags_verification": "demo"},
+    "Quán Cơm Nhà 63 Hàng Bông": {"occasion_tags": ["solo","date","friends","family","work"], "tags_verification": "demo"},
+    "Chả Giò Bà Tuyết":          {"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Bánh Gối 5 Hàng Chiếu":     {"occasion_tags": ["solo","late_night"],     "tags_verification": "demo"},
+    "Quán Trứng Lộn 14 Hàng Bông": {"occasion_tags": ["solo","late_night"],   "tags_verification": "demo"},
+    "Bánh Tráng Trộn Bà Tuyết":  {"occasion_tags": ["solo","quick","late_night"], "tags_verification": "demo"},
+    "Xôi Yến - Chi nhánh vỉa hè":{"occasion_tags": ["solo","quick"],          "tags_verification": "demo"},
+    "Nem Chua Thanh Hóa 36 Hàng Bông": {"occasion_tags": ["solo","quick"],    "tags_verification": "demo"},
+    "Bánh Rán Bọc Đường 12 Hàng Bạc": {"occasion_tags": ["solo","quick"],    "tags_verification": "demo"},
+}
+
 
 def build_maps_link(name: str, address: str) -> str:
     """Build a Google Maps search URL per the required format."""
@@ -921,14 +995,23 @@ async def seed_data() -> int:
             return count
 
         for dish in DISHES:
+            meta = DISH_META.get(dish["slug"], {})
             restaurants = dish.pop("restaurants", [])
             recipe = dish.pop("recipe", None)
             reviews = dish.pop("reviews", [])
 
             await db_conn.execute(
                 """INSERT INTO dishes (name, slug, description, meal_type, image_url, image_source,
-                                      avg_rating, avg_price, is_demo, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)""",
+                                      avg_rating, avg_price, is_demo, created_at,
+                                      healthy_score, oil_level, spicy_level, vegetarian, protein_level,
+                                      calories_estimate, calories_source,
+                                      dominant_color, color_tags, color_source, verification_status,
+                                      cuisine, key_ingredients, dish_origin)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?,
+                           ?, ?, ?, ?, ?,
+                           NULL, '',
+                           ?, ?, 'Chưa xác minh - tạm gán theo món', 'demo',
+                           ?, ?, ?)""",
                 (
                     dish["name"],
                     dish["slug"],
@@ -939,16 +1022,29 @@ async def seed_data() -> int:
                     dish["avg_rating"],
                     dish["avg_price"],
                     datetime.utcnow().isoformat(),
+                    meta.get("healthy_score"),
+                    meta.get("oil_level", "unknown"),
+                    meta.get("spicy_level", "none"),
+                    1 if meta.get("vegetarian") else 0,
+                    meta.get("protein_level", "unknown"),
+                    meta.get("dominant_color", ""),
+                    json.dumps(meta.get("color_tags", []), ensure_ascii=False),
+                    meta.get("cuisine", "Việt Nam"),
+                    json.dumps(meta.get("key_ingredients", []), ensure_ascii=False),
+                    meta.get("dish_origin", "Hà Nội"),
                 ),
             )
             row = await db_conn.execute("SELECT last_insert_rowid()")
             dish_id = (await row.fetchone())[0]
 
             for rest in restaurants:
+                rest_meta = REST_TAGS.get(rest["name"], {})
                 await db_conn.execute(
                     """INSERT INTO restaurants (dish_id, name, address, district, hours, price_range,
-                                               maps_link, maps_source, is_demo)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, 'Demo - Chưa xác minh', 1)""",
+                                               maps_link, maps_source, is_demo,
+                                               occasion_tags, tags_verification)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, 'Demo - Chưa xác minh', 1,
+                               ?, 'demo')""",
                     (
                         dish_id,
                         rest["name"],
@@ -957,6 +1053,7 @@ async def seed_data() -> int:
                         rest["hours"],
                         rest["price_range"],
                         build_maps_link(rest["name"], rest["address"]),
+                        json.dumps(rest_meta.get("occasion_tags", []), ensure_ascii=False),
                     ),
                 )
 
