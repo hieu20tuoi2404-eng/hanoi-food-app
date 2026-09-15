@@ -35,13 +35,51 @@ const DEFAULT_THEME = {
   mascot: 'default',
 }
 
-const AppContext = createContext({ sessionId: '', api: null, themes: [], themeId: '', setThemeId: () => {}, appliedTheme: DEFAULT_THEME })
+const AppContext = createContext({
+  sessionId: '',
+  api: null,
+  themes: [],
+  themeId: '',
+  setThemeId: () => {},
+  appliedTheme: DEFAULT_THEME,
+  mascots: [],
+  mascotId: null,
+  mascot: null,
+  mascotReady: false,
+  setMascotId: () => {},
+  clearMascot: () => {},
+  pickerSeen: false,
+  openMascotPicker: () => {},
+  closeMascotPicker: () => {},
+  animationsEnabled: true,
+  toggleAnimations: () => {},
+})
 
 export function AppProvider({ children }) {
   const [sessionId] = useState(getSessionId)
   const [themes, setThemes] = useState([])
   const [themeId, setThemeId] = useState(DEFAULT_THEME.id)
   const [appliedTheme, setAppliedTheme] = useState(DEFAULT_THEME)
+  const [mascots, setMascots] = useState([])
+  const [mascotId, setMascotIdState] = useState(() => localStorage.getItem('angi_mascot_id'))
+  const [mascotReady, setMascotReady] = useState(false)
+  const [pickerSeen, setPickerSeen] = useState(() => localStorage.getItem('angi_mascot_picker_seen') === '1')
+  const [animationsEnabled, setAnimationsEnabled] = useState(
+    () => localStorage.getItem('angi_animations') !== '0',
+  )
+
+  // Reflect animation preference on <html> so CSS can toggle.
+  useEffect(() => {
+    document.documentElement.dataset.animations = animationsEnabled ? 'on' : 'off'
+  }, [animationsEnabled])
+
+  const toggleAnimations = useCallback(() => {
+    setAnimationsEnabled((prev) => {
+      const next = !prev
+      localStorage.setItem('angi_animations', next ? '1' : '0')
+      return next
+    })
+  }, [])
 
   const applyTheme = useCallback((theme) => {
     if (!theme || !theme.colors) return
@@ -56,19 +94,21 @@ export function AppProvider({ children }) {
     root.style.setProperty('--accent-dark', c.accent_dark)
     root.style.setProperty('--accent-light', c.accent_light)
     root.style.setProperty('--border', c.border)
-    root.dataset.mascot = theme.mascot || 'default'
+    root.dataset.mascot = theme.mascot || theme.mascot_id || 'default'
     root.dataset.theme = theme.id || 'default'
     setAppliedTheme(theme)
   }, [])
 
-  // Load themes + the user's saved theme on mount.
+  // Load themes + the user's saved theme + mascots + user mascot on mount.
   useEffect(() => {
     let cancelled = false
     ;(async () => {
       try {
-        const [themesRes, selRes] = await Promise.all([
+        const [themesRes, selRes, mascotsRes, userMascotRes] = await Promise.all([
           fetch(`${API}/api/themes`),
           fetch(`${API}/api/themes/selection`, { headers: { 'X-Session-Id': sessionId } }),
+          fetch(`${API}/api/mascots`),
+          fetch(`${API}/api/user/mascot`, { headers: { 'X-Session-Id': sessionId } }),
         ])
         if (themesRes.ok) {
           const list = await themesRes.json()
@@ -78,8 +118,21 @@ export function AppProvider({ children }) {
           const sel = await selRes.json()
           if (sel.theme_id) setThemeId(sel.theme_id)
         }
+        if (mascotsRes.ok) {
+          const list = await mascotsRes.json()
+          if (!cancelled) setMascots(list)
+        }
+        if (userMascotRes.ok) {
+          const sel = await userMascotRes.json()
+          if (!cancelled && sel.mascot_id) {
+            setMascotIdState(sel.mascot_id)
+            localStorage.setItem('angi_mascot_id', sel.mascot_id)
+          }
+        }
       } catch (e) {
         /* offline: keep defaults */
+      } finally {
+        if (!cancelled) setMascotReady(true)
       }
     })()
     return () => {
@@ -124,9 +177,74 @@ export function AppProvider({ children }) {
     [sessionId],
   )
 
+  const setMascotId = useCallback(
+    async (newId) => {
+      setMascotIdState(newId)
+      if (newId) localStorage.setItem('angi_mascot_id', newId)
+      else localStorage.removeItem('angi_mascot_id')
+      try {
+        await api(newId ? '/api/user/mascot' : '/api/user/mascot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newId ? { mascot_id: newId } : { mascot_id: null }),
+        })
+      } catch (e) {
+        /* non-fatal — local choice kept */
+      }
+    },
+    [api],
+  )
+
+  const clearMascot = useCallback(async () => {
+    setMascotIdState(null)
+    localStorage.removeItem('angi_mascot_id')
+    try {
+      await api('/api/user/mascot', { method: 'DELETE' })
+    } catch (e) {
+      /* non-fatal */
+    }
+  }, [api])
+
+  const openMascotPicker = useCallback(() => {
+    setPickerSeen(false)
+  }, [])
+
+  const closeMascotPicker = useCallback(() => {
+    setPickerSeen(true)
+    localStorage.setItem('angi_mascot_picker_seen', '1')
+  }, [])
+
+  const mascot = useMemo(
+    () => (mascotId ? mascots.find((m) => m.id === mascotId) || null : null),
+    [mascotId, mascots],
+  )
+
   const value = useMemo(
-    () => ({ sessionId, api, themes, themeId, setThemeId: changeTheme, appliedTheme }),
-    [sessionId, api, themes, themeId, changeTheme, appliedTheme],
+    () => ({
+      sessionId,
+      api,
+      themes,
+      themeId,
+      setThemeId: changeTheme,
+      appliedTheme,
+      mascots,
+      mascotId,
+      mascot,
+      mascotReady,
+      setMascotId,
+      clearMascot,
+      pickerSeen,
+      openMascotPicker,
+      closeMascotPicker,
+      animationsEnabled,
+      toggleAnimations,
+    }),
+    [
+      sessionId, api, themes, themeId, changeTheme, appliedTheme,
+      mascots, mascotId, mascot, mascotReady, setMascotId, clearMascot,
+      pickerSeen, openMascotPicker, closeMascotPicker,
+      animationsEnabled, toggleAnimations,
+    ],
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

@@ -68,23 +68,6 @@ THEMES: list[dict[str, Any]] = [
         "is_unlocked": True,
     },
     {
-        "id": "hoi-meo",
-        "name": "Hội mèo",
-        "colors": {
-            "bg": "#fef7ee",
-            "bg_gradient": "linear-gradient(160deg, #fef7ee 0%, #fff5e6 45%, #fef0dc 100%)",
-            "card_bg": "#ffffff",
-            "text": "#1c1917",
-            "text_muted": "#78716c",
-            "accent": "#f97316",
-            "accent_dark": "#ea580c",
-            "accent_light": "#fff7ed",
-            "border": "#e7e5e4",
-        },
-        "mascot": "cat",
-        "is_unlocked": True,
-    },
-    {
         "id": "healthy",
         "name": "Healthy",
         "colors": {

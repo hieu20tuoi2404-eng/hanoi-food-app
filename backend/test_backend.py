@@ -615,9 +615,29 @@ def test_themes_list(client):
     r = client.get("/api/themes")
     assert r.status_code == 200
     themes = r.json()
-    assert len(themes) == 6
+    # 5 original + 12 zodiac = 17 total
+    assert len(themes) == 17
     ids = {t["id"] for t in themes}
-    assert ids == {"ha-noi-co-dien", "pho-dem", "hoi-meo", "healthy", "toi-gian", "tet-le-hoi"}
+    assert "ha-noi-co-dien" in ids
+    assert "hoi-meo" not in ids
+    # All 12 zodiac themes present
+    for zid in ["rat", "ox", "tiger", "rabbit", "dragon", "snake",
+                "horse", "goat", "monkey", "rooster", "dog", "pig"]:
+        assert zid in ids
+
+
+def test_theme_get_by_id(client):
+    r = client.get("/api/themes/dragon")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["id"] == "dragon"
+    assert data["name"] == "Nhà Rồng"
+    assert "mascot_id" in data
+
+
+def test_theme_get_by_id_not_found(client):
+    r = client.get("/api/themes/nope")
+    assert r.status_code == 404
 
 
 def test_theme_select_persist(client):
@@ -630,6 +650,75 @@ def test_theme_select_persist(client):
 def test_theme_select_bad(client):
     r = client.post("/api/themes/select", json={"theme_id": "nope"}, headers={"X-Session-Id": "theme-user-2"})
     assert r.status_code == 404
+
+
+# ============================================================
+# 3.0: mascots
+# ============================================================
+
+def test_mascots_list(client):
+    r = client.get("/api/mascots")
+    assert r.status_code == 200
+    mascots = r.json()
+    assert len(mascots) == 12
+    ids = {m["id"] for m in mascots}
+    for mid in ["ty", "suu", "dan", "mao", "thin", "ty-snake",
+                "ngo", "mui", "than", "dau", "tuat", "hoi"]:
+        assert mid in ids
+
+
+def test_mascot_get_by_id(client):
+    r = client.get("/api/mascots/thin")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["animal"] == "Rồng"
+    assert data["id"] == "thin"
+
+
+def test_mascot_get_by_id_not_found(client):
+    r = client.get("/api/mascots/nope")
+    assert r.status_code == 404
+
+
+def test_user_mascot_set_and_get(client):
+    sid = "mascot-test-user"
+    r = client.post("/api/user/mascot", json={"mascot_id": "thin"}, headers={"X-Session-Id": sid})
+    assert r.status_code == 200
+    assert r.json()["mascot_id"] == "thin"
+    g = client.get("/api/user/mascot", headers={"X-Session-Id": sid})
+    assert g.json()["mascot_id"] == "thin"
+
+
+def test_user_mascot_update(client):
+    sid = "mascot-test-update"
+    client.post("/api/user/mascot", json={"mascot_id": "ty"}, headers={"X-Session-Id": sid})
+    r = client.post("/api/user/mascot", json={"mascot_id": "hoi"}, headers={"X-Session-Id": sid})
+    assert r.status_code == 200
+    assert r.json()["mascot_id"] == "hoi"
+
+
+def test_user_mascot_delete(client):
+    sid = "mascot-test-delete"
+    client.post("/api/user/mascot", json={"mascot_id": "dan"}, headers={"X-Session-Id": sid})
+    r = client.delete("/api/user/mascot", headers={"X-Session-Id": sid})
+    assert r.status_code == 200
+    assert r.json()["deleted"] is True
+    g = client.get("/api/user/mascot", headers={"X-Session-Id": sid})
+    assert g.json()["mascot_id"] is None
+
+
+def test_user_mascot_invalid_id(client):
+    r = client.post("/api/user/mascot", json={"mascot_id": "nope"}, headers={"X-Session-Id": "mascot-bad"})
+    assert r.status_code == 404
+
+
+def test_user_mascot_clear_by_posting_null(client):
+    sid = "mascot-test-clear"
+    client.post("/api/user/mascot", json={"mascot_id": "dan"}, headers={"X-Session-Id": sid})
+    r = client.post("/api/user/mascot", json={"mascot_id": None}, headers={"X-Session-Id": sid})
+    assert r.status_code == 200
+    g = client.get("/api/user/mascot", headers={"X-Session-Id": sid})
+    assert g.json()["mascot_id"] is None
 
 
 # ============================================================

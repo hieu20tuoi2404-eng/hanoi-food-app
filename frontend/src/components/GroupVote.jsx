@@ -14,7 +14,7 @@ function isClean(name) {
 }
 
 export default function GroupVote() {
-  const { api } = useApp()
+  const { api, mascot } = useApp()
   const [hostName, setHostName] = useState('')
   const [voterName, setVoterName] = useState('')
   const [roomCode, setRoomCode] = useState('')
@@ -129,7 +129,14 @@ export default function GroupVote() {
         </form>
       )}
 
-      {error && <div className="lootbox-error">{error}</div>}
+      {error && (
+        <div className="lootbox-error fate-error-mascot">
+          <span className="fate-error-mascot-emoji">{mascot ? mascot.emoji : '🍜'}</span>
+          <span>
+            {mascot ? `${mascot.name} nói: "${mascot.fallback_message}" ${error}` : error}
+          </span>
+        </div>
+      )}
       {info && <div className="group-info">{info}</div>}
 
       {room && (
@@ -184,7 +191,8 @@ export default function GroupVote() {
 
           {room.status === 'finished' && tally?.winner && (
             <div className="group-winner">
-              🎉 Quyết định hôm nay là <b>{tally.winner.name}</b>!
+              <span className="group-winner-mascot">{mascot ? `${mascot.emoji} ${mascot.name} chúc mừng! ` : '🎉 '}</span>
+              Quyết định hôm nay là <b>{tally.winner.name}</b>!
               <Link to={`/dish/${tally.winner.slug}`} className="lootbox-result-link"> Xem chi tiết &#8594;</Link>
             </div>
           )}

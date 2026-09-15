@@ -1639,3 +1639,384 @@ body {
     width: 100%;
   }
 }
+/* ===== 3.0 Mascots (12 con giáp) ===== */
+
+/* Generic buttons */
+.btn {
+  display: inline-block;
+  padding: 10px 18px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--text);
+  background: var(--card-bg);
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+.btn:hover {
+  transform: translateY(-1px);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.btn-danger {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Mascot picker (full screen on first launch + /chon-con-giap) */
+.mascot-picker-overlay {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background:
+    radial-gradient(circle at 12% 12%, var(--accent-light) 0%, transparent 40%),
+    radial-gradient(circle at 88% 88%, var(--accent-light) 0%, transparent 40%),
+    var(--bg);
+}
+.mascot-picker {
+  width: 100%;
+  max-width: 860px;
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  padding: 24px 20px 28px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+.mascot-picker h2 {
+  margin: 0 0 6px;
+  font-size: 1.5rem;
+  color: var(--text);
+  text-align: center;
+}
+.mascot-picker-sub {
+  margin: 0 0 18px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+/* Large preview above the grid */
+.mascot-preview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 2px dashed var(--preview-color);
+  background: var(--accent-light);
+  margin-bottom: 16px;
+}
+.mascot-preview-emoji {
+  font-size: 2.6rem;
+  line-height: 1;
+}
+.mascot-preview-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--text);
+}
+.mascot-preview-info strong {
+  font-size: 1.05rem;
+}
+.mascot-preview-info span {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Grid of 12 cards (mobile friendly) */
+.mascot-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.mascot-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  border-radius: 14px;
+  border: 2px solid var(--border);
+  background: var(--card-bg);
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.mascot-card:hover {
+  transform: translateY(-2px);
+}
+.mascot-card.active {
+  border-color: var(--mascot-color);
+  box-shadow: 0 0 0 3px var(--mascot-secondary);
+  background: var(--accent-light);
+}
+.mascot-card-emoji {
+  font-size: 2rem;
+  line-height: 1.1;
+}
+.mascot-card-name {
+  font-weight: 800;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+.mascot-card-animal {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* Birthday suggestion */
+.mascot-birthday {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+}
+.mascot-birthday label {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+.mascot-birthday-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.mascot-birthday input {
+  flex: 1;
+  min-width: 180px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: var(--card-bg);
+  color: var(--text);
+}
+.mascot-suggestion {
+  margin: 10px 0 0;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+/* Actions row */
+.mascot-picker-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+.mascot-picker-footnote {
+  margin: 14px 0 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+/* Navbar mascot chip */
+.navbar-mascot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--mascot-color, var(--accent));
+  background: var(--card-bg);
+  margin-right: 6px;
+  text-decoration: none;
+}
+.navbar-mascot-emoji {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+/* Hero mascot */
+.hero-mascot {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px auto 0;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 2px solid var(--mascot-color, var(--accent));
+  background: var(--card-bg);
+}
+.hero-mascot-emoji {
+  font-size: 1.6rem;
+}
+.hero-mascot-greeting {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+/* Fate: 3rd-roll mascot card */
+.fate-limit-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+  text-align: center;
+}
+.fate-limit-emoji {
+  font-size: 2rem;
+}
+.fate-limit-card p {
+  margin: 0;
+  color: var(--text);
+  font-weight: 700;
+}
+.fate-limit-card .fate-limit-sub {
+  font-weight: 500;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Friendly mascot error */
+.fate-error-mascot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+.fate-error-mascot-emoji {
+  font-size: 1.5rem;
+}
+
+/* Empty states with mascot */
+.empty-mascot-emoji {
+  font-size: 2rem;
+  margin-right: 8px;
+}
+
+/* Achievements congrats */
+.achievements-congrats {
+  margin: 0 0 10px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+/* Settings page */
+.settings-page {
+  max-width: 640px;
+  margin: 0 auto;
+}
+.settings-title {
+  color: var(--text);
+  margin-bottom: 16px;
+}
+.settings-card {
+  background: var(--card-bg);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+.settings-card h3 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+.settings-hint {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0 0 12px;
+}
+.settings-mascot-current {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px dashed var(--mascot-color);
+  background: var(--accent-light);
+  margin-bottom: 12px;
+}
+.settings-mascot-emoji {
+  font-size: 2.4rem;
+}
+.settings-mascot-current p {
+  margin: 2px 0;
+  color: var(--text-muted);
+}
+.settings-mascot-current small {
+  color: var(--text-muted);
+}
+.settings-mascot-none {
+  color: var(--text-muted);
+}
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  cursor: pointer;
+}
+.settings-gennote {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* Animation toggle — kill decorative animations app-wide */
+[data-animations='off'] *,
+[data-animations='off'] ::before,
+[data-animations='off'] ::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (max-width: 640px) {
+  .mascot-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .mascot-card-emoji {
+    font-size: 1.6rem;
+  }
+  .mascot-picker {
+    padding: 18px 14px 22px;
+  }
+  .mascot-picker h2 {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .mascot-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

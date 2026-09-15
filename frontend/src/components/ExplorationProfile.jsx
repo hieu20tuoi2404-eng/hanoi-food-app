@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext'
 import AchievementBadge from './AchievementBadge'
 
 export default function ExplorationProfile() {
-  const { api } = useApp()
+  const { api, mascot } = useApp()
   const [data, setData] = useState(null)
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -83,7 +83,21 @@ export default function ExplorationProfile() {
 
           <div className="achievements">
             <h4 className="achievements-title">Huy hiệu đã đạt</h4>
-            {achievements.length === 0 && <div className="empty small">Chưa có huy hiệu — xem vài món ăn để bắt đầu!</div>}
+            {achievements.length === 0 && (
+              <div className="empty small">
+                {mascot
+                  ? <>
+                      <span className="empty-mascot-emoji">{mascot.emoji}</span>
+                      "{mascot.encouragement}" Xem vài món ăn để mở khoá huy hiệu đầu tiên nhé!
+                    </>
+                  : 'Chưa có huy hiệu — xem vài món ăn để bắt đầu!'}
+              </div>
+            )}
+            {achievements.length > 0 && mascot && (
+              <p className="achievements-congrats">
+                {mascot.emoji} {mascot.name} vỗ tay: "Bạn vừa mở khoá {unlocked_count} huy hiệu, cứ tiếp tục nào!"
+              </p>
+            )}
             <div className="achievement-list">
               {achievements.map((a) => (
                 <AchievementBadge key={a.key} achievement={a} unlocked />

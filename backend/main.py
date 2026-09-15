@@ -15,6 +15,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from database import get_db, init_db
+from mascots import MASCOTS, MASCOT_MAP, ZODIAC_THEMES, FATE_MESSAGES, get_mascot, suggest_mascot
 from models import (
     ACHIEVEMENTS,
     Category,
@@ -26,8 +27,6 @@ from models import (
     GroupRoomCreate,
     GroupVoteRequest,
     HEALTHY_OPTIONS,
-    LINH_VAT_MESSAGES,
-    LINH_VAT_NAMES,
     MEAL_TYPES,
     OCCASION_OPTIONS,
     Recipe,
@@ -48,7 +47,11 @@ from models import (
 )
 from seed import seed_data
 
-app = FastAPI(title="An Gi Ha Noi? API", version="2.0.0")
+app = FastAPI(title="An Gi Ha Noi? API", version="3.0.0")
+
+# All themes: original 5 + 12 zodiac themes
+ALL_THEMES: list[dict[str, Any]] = THEMES + ZODIAC_THEMES
+ALL_THEME_MAP: dict[str, dict[str, Any]] = {t["id"]: t for t in ALL_THEMES}
 
 FORTUNE_MESSAGES = [
     "Hôm nay trời đẹp, bụng đã kêu — đừng để dạ dày phải chờ!",
@@ -643,6 +646,16 @@ async def fate_roll(body: dict[str, Any], session_id: str | None = Header(defaul
 
     db = await get_db()
     try:
+        # Look up user's selected mascot for this session
+        user_mascot = None
+        if session_id:
+            mrow = await db.execute(
+                "SELECT mascot_id FROM user_mascots WHERE session_id = ?", (session_id,)
+            )
+            msel = await mrow.fetchone()
+            if msel:
+                user_mascot = get_mascot(msel["mascot_id"])
+
         roll = random.randint(1, 6)
         candidates = await _fate_query(meal, diet, occasion, color, exclude_slug, weighted=likely)
         if not candidates:
@@ -661,11 +674,12 @@ async def fate_roll(body: dict[str, Any], session_id: str | None = Header(defaul
             c = await db.execute("SELECT COUNT(*) AS c FROM fate_rolls WHERE session_id = ?", (session_id,))
             count = (await c.fetchone())["c"]
             if count >= 3:
+                mascot_payload = user_mascot or random.choice(MASCOTS)
                 return {
                     "roll": roll,
                     "dish": DishSummary(**_decorate_dish(chosen)).model_dump(),
-                    "linh_vat": random.choice(LINH_VAT_NAMES),
-                    "message": random.choice(LINH_VAT_MESSAGES),
+                    "linh_vat": mascot_payload,
+                    "message": random.choice(FATE_MESSAGES),
                     "likely_done": random.choice([True, False]),
                     "limit_reached": True,
                 }
@@ -675,12 +689,12 @@ async def fate_roll(body: dict[str, Any], session_id: str | None = Header(defaul
             )
             await db.commit()
 
-        linh_vat = random.choice(LINH_VAT_NAMES) if roll == 6 else None
-        message = random.choice(LINH_VAT_MESSAGES) if roll == 6 else None
+        mascot_payload = user_mascot if roll == 6 else None
+        message = random.choice(FATE_MESSAGES) if roll == 6 else None
         return {
             "roll": roll,
             "dish": DishSummary(**_decorate_dish(chosen)).model_dump(),
-            "linh_vat": linh_vat,
+            "linh_vat": mascot_payload,
             "message": message,
             "likely_done": False,
             "limit_reached": False,
@@ -852,11 +866,32 @@ async def finish_group_room(room_code: str) -> dict[str, Any]:
 
 @app.get("/api/themes")
 async def list_themes() -> list[dict[str, Any]]:
-    return THEMES
+    return ALL_THEMES
 
 
-def _resolve_theme_static():
-    return THEMES
+@app.get("/api/themes/selection")
+async def get_theme_selection(
+    session_id: str | None = Header(default=None, alias="X-Session-Id"),
+) -> dict[str, Any]:
+    if not session_id:
+        return {"theme_id": ALL_THEMES[0]["id"]}
+    db = await get_db()
+    try:
+        row = await db.execute(
+            "SELECT theme_id FROM theme_selections WHERE session_id = ?", (session_id,)
+        )
+        sel = await row.fetchone()
+        return {"theme_id": sel["theme_id"] if sel else ALL_THEMES[0]["id"]}
+    finally:
+        await db.close()
+
+
+@app.get("/api/themes/{theme_id}")
+async def get_theme(theme_id: str) -> dict[str, Any]:
+    theme = ALL_THEME_MAP.get(theme_id)
+    if not theme:
+        raise HTTPException(status_code=404, detail="Không tìm thấy theme")
+    return theme
 
 
 @app.post("/api/themes/select")
@@ -865,7 +900,7 @@ async def select_theme(
     session_id: str | None = Header(default=None, alias="X-Session-Id"),
 ) -> dict[str, Any]:
     theme_id = body.get("theme_id")
-    if not any(t["id"] == theme_id for t in THEMES):
+    if theme_id not in ALL_THEME_MAP:
         raise HTTPException(status_code=404, detail="Không tìm thấy theme")
     if not session_id:
         return {"theme_id": theme_id, "persisted": False}
@@ -882,19 +917,83 @@ async def select_theme(
         await db.close()
 
 
-@app.get("/api/themes/selection")
-async def get_theme_selection(
+# ----- Mascots -----
+
+@app.get("/api/mascots")
+async def list_mascots() -> list[dict[str, Any]]:
+    return MASCOTS
+
+
+@app.get("/api/mascots/{mascot_id}")
+async def get_mascot_endpoint(mascot_id: str) -> dict[str, Any]:
+    m = get_mascot(mascot_id)
+    if not m:
+        raise HTTPException(status_code=404, detail="Không tìm thấy linh vật")
+    return m
+
+
+@app.post("/api/user/mascot")
+async def set_user_mascot(
+    body: dict[str, Any],
+    session_id: str | None = Header(default=None, alias="X-Session-Id"),
+) -> dict[str, Any]:
+    mascot_id = body.get("mascot_id")
+    if mascot_id and not get_mascot(mascot_id):
+        raise HTTPException(status_code=404, detail="Không tìm thấy linh vật")
+    if not session_id:
+        return {"mascot_id": mascot_id, "persisted": False}
+    db = await get_db()
+    try:
+        if mascot_id:
+            await db.execute(
+                """INSERT INTO user_mascots (session_id, mascot_id, updated_at)
+                   VALUES (?, ?, ?)
+                   ON CONFLICT(session_id) DO UPDATE
+                   SET mascot_id = excluded.mascot_id, updated_at = excluded.updated_at""",
+                (session_id, mascot_id, datetime.now(timezone.utc).isoformat()),
+            )
+        else:
+            await db.execute("DELETE FROM user_mascots WHERE session_id = ?", (session_id,))
+        await db.commit()
+        return {"mascot_id": mascot_id, "persisted": True}
+    finally:
+        await db.close()
+
+
+@app.get("/api/user/mascot")
+async def get_user_mascot(
     session_id: str | None = Header(default=None, alias="X-Session-Id"),
 ) -> dict[str, Any]:
     if not session_id:
-        return {"theme_id": THEMES[0]["id"]}
+        return {"mascot_id": None}
     db = await get_db()
     try:
         row = await db.execute(
-            "SELECT theme_id FROM theme_selections WHERE session_id = ?", (session_id,)
+            "SELECT mascot_id, birthday_day, birthday_month FROM user_mascots WHERE session_id = ?",
+            (session_id,),
         )
         sel = await row.fetchone()
-        return {"theme_id": sel["theme_id"] if sel else THEMES[0]["id"]}
+        if sel:
+            result: dict[str, Any] = {"mascot_id": sel["mascot_id"]}
+            if sel["birthday_day"]:
+                result["suggested_by_birthday"] = True
+            return result
+        return {"mascot_id": None}
+    finally:
+        await db.close()
+
+
+@app.delete("/api/user/mascot")
+async def delete_user_mascot(
+    session_id: str | None = Header(default=None, alias="X-Session-Id"),
+) -> dict[str, Any]:
+    if not session_id:
+        return {"deleted": False}
+    db = await get_db()
+    try:
+        await db.execute("DELETE FROM user_mascots WHERE session_id = ?", (session_id,))
+        await db.commit()
+        return {"deleted": True}
     finally:
         await db.close()
 

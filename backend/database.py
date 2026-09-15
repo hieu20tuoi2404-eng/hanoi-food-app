@@ -147,6 +147,17 @@ async def init_db() -> None:
             rolled_at TEXT NOT NULL DEFAULT (datetime('now')),
             FOREIGN KEY (dish_id) REFERENCES dishes(id) ON DELETE CASCADE
         );
+
+        CREATE TABLE IF NOT EXISTS user_mascots (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL UNIQUE,
+            mascot_id TEXT NOT NULL,
+            birthday_day INTEGER,
+            birthday_month INTEGER,
+            consent_save INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
         """
     )
 

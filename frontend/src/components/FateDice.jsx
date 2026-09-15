@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import RarityBadge from './RarityBadge'
+import { useApp } from '../context/AppContext'
 
 const API = import.meta.env.VITE_API_BASE || ''
 
 export default function FateDice() {
+  const { mascot } = useApp()
   const [state, setState] = useState('idle') // idle | rolling | result
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
@@ -34,6 +36,11 @@ export default function FateDice() {
     }
   }
 
+  const mascotLabel = (mv) => {
+    if (!mv) return null
+    return `${mv.emoji || ''} ${mv.name || mv.label || ''}${mv.animal ? ` (${mv.animal})` : ''}`.trim()
+  }
+
   return (
     <div className="widget fate-widget">
       <h3 className="widget-title">🎲 Vạn sự tùy duyên</h3>
@@ -48,18 +55,33 @@ export default function FateDice() {
         </button>
       </div>
 
-      {error && <div className="lootbox-error">{error}</div>}
+      {error && (
+        <div className="lootbox-error fate-error-mascot">
+          <span className="fate-error-mascot-emoji">{mascot ? mascot.emoji : '🍜'}</span>
+          <span>
+            {mascot
+              ? `${mascot.name} nói: "${mascot.fallback_message}" ${error}`
+              : error}
+          </span>
+        </div>
+      )}
 
       {result && state === 'result' && (
         <div className={`fate-result rarity-card-${result.dish.rarity.key}`}>
           <div className="fate-roll-line">
             <span className="fate-dice">⚄</span>
             <span className="fate-roll-num">Ra mặt <b>{result.roll}</b></span>
-            {result.roll === 6 && <span className="fate-linh-vat">{result.linh_vat.emoji} {result.linh_vat.label}</span>}
+            {result.linh_vat && <span className="fate-linh-vat">{mascotLabel(result.linh_vat)}</span>}
           </div>
-          {result.roll === 6 && result.message && <p className="fate-message">"{result.message}"</p>}
+          {result.linh_vat && result.message && <p className="fate-message">"{result.message}"</p>}
           {result.limit_reached && (
-            <p className="fate-limit">Bạn đã xúc đủ 3 lần — trời phán luôn: thế là đủ! 🤡</p>
+            <div className="fate-limit-card">
+              <span className="fate-limit-emoji">{result.linh_vat ? result.linh_vat.emoji : '🎯'}</span>
+              <p>Bạn đã quay 3 lần rồi. Hôm nay hãy thử món này nhé!</p>
+              <p className="fate-limit-sub">
+                Đây là gợi ý vui từ linh vật của bạn, bạn vẫn có thể chọn món khác.
+              </p>
+            </div>
           )}
 
           <div className="lootbox-result-main">

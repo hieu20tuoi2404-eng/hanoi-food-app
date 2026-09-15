@@ -4,14 +4,22 @@ import { useApp } from '../context/AppContext'
 const THEME_ICONS = {
   'ha-noi-co-dien': '🏯',
   'pho-dem': '🌙',
-  'hoi-meo': '🐱',
   healthy: '🥗',
   'toi-gian': '⬜',
   'tet-le-hoi': '🎆',
 }
 
 export default function ThemeSwitcher() {
-  const { themes, themeId, setThemeId } = useApp()
+  const { themes, themeId, setThemeId, mascots } = useApp()
+
+  const iconFor = (t) => {
+    if (THEME_ICONS[t.id]) return THEME_ICONS[t.id]
+    if (t.mascot_id) {
+      const m = mascots.find((mm) => mm.id === t.mascot_id)
+      if (m) return m.emoji
+    }
+    return '🎨'
+  }
 
   return (
     <div className="theme-switcher">
@@ -27,7 +35,7 @@ export default function ThemeSwitcher() {
           onClick={() => setThemeId(t.id)}
           style={{ '--dot': t.colors.accent }}
         >
-          <span className="theme-dot-icon">{THEME_ICONS[t.id] || '🎨'}</span>
+          <span className="theme-dot-icon">{iconFor(t)}</span>
         </button>
       ))}
     </div>

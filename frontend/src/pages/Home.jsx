@@ -8,6 +8,7 @@ import ZodiacWidget from '../components/ZodiacWidget'
 import FateDice from '../components/FateDice'
 import GroupVote from '../components/GroupVote'
 import { Link } from 'react-router-dom'
+import { useApp } from '../context/AppContext'
 
 const API = import.meta.env.VITE_API_BASE || ''
 
@@ -44,6 +45,7 @@ function toQuery(meal, f, search) {
 }
 
 export default function Home() {
+  const { mascot } = useApp()
   const [meal, setMeal] = useState('')
   const [filters, setFilters] = useState({ district: '', price: '', min_rating: '', diet: '', occasion: '', color: '' })
   const [search, setSearch] = useState('')
@@ -94,6 +96,14 @@ export default function Home() {
             30 món Hà Nội chính hiệu, từ quán vỉa hè tới mâm cơm gia đình.
             Không biết ăn gì? Để "hòm tiếp tế" quay giúp bạn! 🎲
           </p>
+          {mascot && (
+            <div className="hero-mascot" style={{ '--mascot-color': mascot.theme_color }}>
+              <span className="hero-mascot-emoji">{mascot.emoji}</span>
+              <p className="hero-mascot-greeting">
+                <b>{mascot.name} – {mascot.animal}</b> nói: "{mascot.greeting}"
+              </p>
+            </div>
+          )}
           <div className="hero-stats">
             <span className="hero-stat"><b>{activeCount}</b> món</span>
             <span className="hero-stat"><b>4</b> bữa</span>
@@ -155,7 +165,12 @@ export default function Home() {
 
         {!loading && !error && dishes.length === 0 && (
           <div className="empty">
-            Không có món phù hợp. Thử đổi bộ lọc hoặc bớt từ khoá tìm nhé!
+            {mascot
+              ? <>
+                  <span className="empty-mascot-emoji">{mascot.emoji}</span>
+                  "{mascot.encouragement}"
+                </>
+              : 'Không có món phù hợp. Thử đổi bộ lọc hoặc bớt từ khoá tìm nhé!'}
             <br />
             <Link className="back-link" to="/">&#8592; Reset</Link>
           </div>
