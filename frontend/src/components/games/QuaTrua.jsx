@@ -136,8 +136,8 @@ export default function QuaTrua() {
   return (
     <div className="quatrua">
       <div className="quatrua-head">
-        <h2 className="quatrua-title"><span className="loot-icon">🔮</span> Quẻ trưa</h2>
-        <p className="quatrua-sub">Bói một quẻ xem trưa nay ăn gì cho &quot;hợp duyên&quot;! Ấn nút để quay quẻ nhé.</p>
+        <h2 className="quatrua-title"><span className="loot-icon">🔮</span> Gieo quẻ</h2>
+        <p className="quatrua-sub">Gieo một quẻ xem ăn gì cho &quot;hợp duyên&quot;! Ấn nút để gieo quẻ nhé.</p>
       </div>
 
       <div className="reel-window" ref={winRef}>
@@ -205,7 +205,7 @@ export default function QuaTrua() {
       </div>
 
       <button className="reel-spin" onClick={spin} disabled={phase === 'spinning'} type="button">
-        {phase === 'spinning' ? 'Đang quay...' : '🎰 XIN QUẺ'}
+        {phase === 'spinning' ? 'Đang quay...' : '🎰 GIEO QUẺ'}
       </button>
 
       {error && <div className="lootbox-error">{error}</div>}

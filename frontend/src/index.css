@@ -1,4 +1,4 @@
-*,
+﻿*,
 *::before,
 *::after {
   box-sizing: border-box;
@@ -366,7 +366,7 @@ body {
   padding: 10px;
 }
 
-/* Quẻ trưa */
+/* Gieo quẻ */
 .quatrua {
   margin: 22px 0 8px;
   background: var(--card-bg);
@@ -409,7 +409,7 @@ body {
   border-radius: 10px;
 }
 
-/* ===== Quẻ trưa reel (slot machine) ===== */
+/* ===== Gieo quẻ reel (slot machine) ===== */
 .reel-window {
   position: relative;
   margin-top: 14px;
