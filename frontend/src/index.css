@@ -1407,6 +1407,62 @@ body {
   align-items: center;
   margin-top: 8px;
 }
+
+/* ===== Duyên vị: guild banner + secondary spin ===== */
+.fate-banner {
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%, rgba(142, 45, 226, 0.12), transparent 70%),
+    var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px 16px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+.fate-banner-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 12px;
+  margin-bottom: 10px;
+}
+.fate-banner-title {
+  font-size: 1.4rem;
+  margin: 0 0 4px;
+}
+.fate-banner-sub {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+.fate-btn-secondary {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.fate-btn-secondary:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.fate-btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 .lootbox-error {
   color: #d4451a;
   font-size: 0.85rem;
