@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+﻿import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useApp } from '../context/AppContext'
+import { useApp } from '../../context/AppContext'
 
 const BAD_WORDS = ['mẹ', 'bố', 'con cặc', 'địt', 'lồn', 'chó má', 'cút']
 

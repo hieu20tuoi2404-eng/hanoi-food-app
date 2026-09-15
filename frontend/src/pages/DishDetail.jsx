@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import RarityBadge from '../components/RarityBadge'
+import RarityBadge from '../components/cards/RarityBadge'
 import { api, getSessionId } from '../api'
 
 export default function DishDetail() {

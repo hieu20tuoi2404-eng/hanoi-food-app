@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react'
+﻿import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import RarityBadge from './RarityBadge'
-import { useApp } from '../context/AppContext'
+import RarityBadge from '../cards/RarityBadge'
+import { useApp } from '../../context/AppContext'
 
 const API = import.meta.env.VITE_API_BASE || ''
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import DishCard from './DishCard'
+import DishCard from '../cards/DishCard'
 
 export default function CollectionView() {
   const API = import.meta.env.VITE_API_BASE || ''

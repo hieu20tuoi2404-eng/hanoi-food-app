@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
-import { useApp } from '../context/AppContext'
-import AchievementBadge from './AchievementBadge'
+﻿import React, { useEffect, useState } from 'react'
+import { useApp } from '../../context/AppContext'
+import AchievementBadge from '../cards/AchievementBadge'
 
 export default function ExplorationProfile() {
   const { api, mascot } = useApp()

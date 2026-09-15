@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import ThemeSwitcher from './ThemeSwitcher'
-import { useApp } from '../context/AppContext'
+import { useApp } from '../../context/AppContext'
 
 export default function Navbar() {
   const [now, setNow] = useState(new Date())

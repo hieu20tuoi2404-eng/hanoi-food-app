@@ -1,11 +1,11 @@
 import React from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
-import Navbar from './components/Navbar'
+import Navbar from './components/layout/Navbar'
 import Home from './pages/Home'
 import DishDetail from './pages/DishDetail'
-import CollectionView from './components/CollectionView'
+import CollectionView from './components/collection/CollectionView'
 import Settings from './pages/Settings'
-import MascotPicker from './components/MascotPicker'
+import MascotPicker from './components/widgets/MascotPicker'
 import { useApp } from './context/AppContext'
 
 function AppRoutes() {
