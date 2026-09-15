@@ -693,7 +693,7 @@ async def fate_roll(body: dict[str, Any], session_id: str | None = Header(defaul
             )
             await db.commit()
 
-        mascot_payload = user_mascot if roll == 6 else None
+        mascot_payload = (user_mascot or random.choice(MASCOTS)) if roll == 6 else None
         message = random.choice(FATE_MESSAGES) if roll == 6 else None
         return {
             "roll": roll,
