@@ -972,15 +972,57 @@ def build_maps_link(name: str, address: str) -> str:
     return f"https://www.google.com/maps/search/?api=1&query={encoded}"
 
 
-def normalize_images() -> None:
-    """Point all dishes to locally generated SVG illustrations.
+# AI image prompts (Pollinations.ai) — each dish gets a unique, realistic photo
+AI_IMAGE_PROMPTS: dict[str, str] = {
+    "pho-bo-ha-noi":     "Traditional Vietnamese pho bo, Hanoi beef noodle soup with rare beef slices, fresh herbs, bean sprouts, lime wedge, steaming bowl, food photography, top-down angle, warm lighting",
+    "bun-cha":           "Vietnamese bun cha, Hanoi grilled pork patties and sliced pork belly with rice vermicelli, fresh herbs, dipping nuoc cham, food photography, overhead shot",
+    "banh-cuon":         "Vietnamese banh cuon, delicate steamed rice rolls filled with minced pork and wood ear mushroom, topped with fried shallots, fresh herbs, food photography",
+    "xoi-xeo":           "Vietnamese xoi xeo, bright yellow sticky rice topped with mung bean paste and crispy fried shallots, served on banana leaf, food photography, morning light",
+    "banh-mi-pate":      "Vietnamese banh mi sandwich, crispy baguette filled with pate, Vietnamese cold cuts, pickled daikon and carrot, cilantro, jalapeno, food photography",
+    "pho-ga":            "Vietnamese pho ga, clear chicken noodle soup with poached chicken, fresh herbs, bean sprouts, lime, steaming bowl, food photography, warm tones",
+    "chao-suon":         "Vietnamese chao suon, silky rice porridge with tender pork ribs, green onion, crispy fried shallots, pepper, comfort food photography",
+    "banh-bao":          "Vietnamese banh bao, fluffy steamed bun dumplings with savory pork and egg filling, steamer basket, food photography, soft lighting",
+    "mi-van-than":       "Vietnamese mi van than, egg noodle soup with pork and shrimp wontons, char siu pork slices, green onion, food photography",
+    "com-lang-vong":     "Vietnamese com lang vong, Hanoi fragrant green rice flakes served with ripe banana and mung bean, traditional dish, food photography",
+    "bun-bo-nam-bo":     "Vietnamese bun bo nam bo, beef noodle salad with rare beef, peanuts, fresh herbs, pickled carrots, fish sauce dressing, food photography",
+    "com-tam-suon-nuong": "Vietnamese com tam, broken rice plate with grilled pork chop, steamed egg cake, pickled vegetables, nuoc cham, food photography, overhead",
+    "bun-oc":            "Vietnamese bun oc, snail noodle soup with rich tomato broth, rice vermicelli, fresh herbs, lime, street food photography",
+    "banh-da-cua":       "Vietnamese banh da cua, crab noodle soup with red crab, tomato broth, rice vermicelli, fresh herbs, food photography",
+    "nem-chua-ran":      "Vietnamese nem chua ran, golden crispy deep-fried fermented pork spring rolls, dipping sauce, food photography, close-up",
+    "pho-xao":           "Vietnamese pho xao, stir-fried rice noodles with beef, bean sprouts, onions, dark soy sauce, wok-tossed, food photography",
+    "cha-ca-la-vong":    "Vietnamese cha ca la vong, Hanoi turmeric fish with dill, served in sizzling pan with rice noodles, herbs, shrimp paste, food photography",
+    "bun-thang":         "Vietnamese bun thang, Hanoi rice vermicelli with shredded chicken, sliced egg, Vietnamese ham, shrimp, fresh herbs, food photography",
+    "lau-bo-nhung-me":   "Vietnamese lau bo, bubbling beef hotpot with thinly sliced beef, mushrooms, vegetables, fermented rice dipping sauce, food photography",
+    "nuong-bbq":         "Vietnamese BBQ, charcoal-grilled marinated pork and beef with fresh herbs, rice paper, dipping sauces, food photography, smoky atmosphere",
+    "bun-rieu-cua":      "Vietnamese bun rieu cua, crab paste rice vermicelli soup with rich tomato broth, tofu, fresh herbs, food photography",
+    "vit-quay":          "Vietnamese vit quay, roast duck with crispy golden skin, sliced and served with steamed rice, pickled vegetables, food photography",
+    "thit-kho-trung-vit": "Vietnamese thit kho, caramelized braised pork belly with duck eggs in rich amber sauce, steamed rice, food photography, warm tones",
+    "cha-gio-tom":       "Vietnamese cha gio tom, crispy golden shrimp spring rolls with rice paper wrapper, fresh herbs, sweet chili dipping sauce, food photography",
+    "banh-goi":          "Vietnamese banh goi, deep-fried stuffed dumplings with minced pork and mushroom filling, golden crispy exterior, dipping sauce, food photography",
+    "trung-vit-lon":     "Vietnamese trung vit lon, balut fertilized duck egg, street food served with Vietnamese coriander, salt and pepper, food photography",
+    "banh-trang-tron":   "Vietnamese banh trang tron, mixed rice paper salad with quail eggs, dried beef, mango, herbs, tangy dressing, street food photography",
+    "xoi-xeo-via-he":    "Vietnamese xoi xeo street food, yellow sticky rice served from vendor cart on banana leaf with mung bean and fried shallots, morning street scene, food photography",
+    "nem-chua-thanh-hoa": "Vietnamese nem chua Thanh Hoa, fermented pork wrapped in banana leaf, tangy and sour, served with fresh chili, food photography, close-up",
+    "banh-ran":          "Vietnamese banh ran, deep-fried glutinous rice balls with sweet mung bean filling, golden crispy, street snack, food photography",
+}
 
-    Images live in frontend/public/images and are served at /images/<slug>.svg.
-    image_source is updated to reflect that this is our own demo artwork.
+
+def normalize_images() -> None:
+    """Point all dishes to AI-generated images via Pollinations.ai.
+
+    Each dish gets a unique, realistic food photograph generated from a
+    descriptive English prompt. Images are served via Pollinations CDN.
+    image_source is updated to reflect that these are AI-generated.
     """
     for dish in DISHES:
-        dish["image_url"] = f"/images/{dish['slug']}.svg"
-        dish["image_source"] = "Hình minh hoạ tự tạo (SVG) - Demo"
+        slug = dish["slug"]
+        prompt = AI_IMAGE_PROMPTS.get(slug, f"Vietnamese {dish['name']} food photography")
+        encoded = prompt.replace(" ", "%20").replace(",", "%2C")
+        dish["image_url"] = (
+            f"https://image.pollinations.ai/prompt/{encoded}"
+            f"?width=600&height=420&nologo=true&seed={abs(hash(slug)) % 10000}"
+        )
+        dish["image_source"] = "Hình ảnh AI (Pollinations.ai) - Demo"
 
 
 async def seed_data() -> int:
