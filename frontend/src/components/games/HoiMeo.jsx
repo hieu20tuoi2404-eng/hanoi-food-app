@@ -72,21 +72,6 @@ export default function HoiMeo() {
     if (a) { a.currentTime = 0; a.volume = vol; a.play().catch(() => {}) }
   }, [muted])
 
-  // Load one random dish per badge (3 cats)
-  useEffect(() => {
-    let cancelled = false
-    const load = async () => {
-      try {
-        const results = await Promise.all(CAT_PATHS.map(() => fetchRandomDish()))
-        if (!cancelled) setBadges(results)
-      } catch {
-        if (!cancelled) setError('Không lấy được món — kiểm tra kết nối')
-      }
-    }
-    load()
-    return () => { cancelled = true }
-  }, [])
-
   // Fast reel roll while spinning: food images swap every 350ms
   useEffect(() => {
     if (phase !== 'spinning') return
