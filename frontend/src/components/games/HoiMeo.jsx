@@ -37,6 +37,8 @@ export default function HoiMeo() {
   const audioCtxRef = useRef(null)
   const mountedRef = useRef(true)
   const lockedRef = useRef(Array.from({ length: CAT_PATHS.length }, () => false))
+  const lockedDishesRef = useRef([])
+  const warmPoolRef = useRef([])
   const timersRef = useRef([])
   const phaseRef = useRef(phase)
   phaseRef.current = phase
@@ -54,6 +56,19 @@ export default function HoiMeo() {
   useEffect(() => {
     mountedRef.current = true
     return () => { mountedRef.current = false }
+  }, [])
+
+  // Warm a pool of random dishes on mount so "roll" starts instantly on click
+  useEffect(() => {
+    let on = true
+    const warm = async () => {
+      try {
+        const p = (await Promise.all(Array.from({ length: 10 }, () => fetchRandomDish()))).filter(Boolean)
+        if (on && p.length) warmPoolRef.current = p
+      } catch {}
+    }
+    warm()
+    return () => { on = false }
   }, [])
 
   useEffect(() => {
@@ -132,6 +147,7 @@ export default function HoiMeo() {
     setError('')
     setPhase('rolling')
     lockedRef.current = Array.from({ length: CAT_PATHS.length }, () => false)
+    lockedDishesRef.current = []
     setLocked(Array.from({ length: CAT_PATHS.length }, () => false))
     play('open', 0.7)
 
@@ -142,35 +158,38 @@ export default function HoiMeo() {
       v.play().catch(() => {})
     }
 
-    // Pool of random dishes to cycle through (no per-tick network hits)
-    let pool = []
-    try {
-      pool = await Promise.all(Array.from({ length: 15 }, () => fetchRandomDish()))
-    } catch {}
-    pool = pool.filter(Boolean)
-    if (!mountedRef.current) return
-    if (!pool.length) {
-      setError('Không lấy được món — kiểm tra kết nối')
-      setPhase('idle')
-      return
+    // Live reads so a cold-start refill still feeds the roll
+    const pick = () => {
+      const p = warmPoolRef.current
+      return p.length ? p[Math.floor(Math.random() * p.length)] : null
     }
-    const pick = () => pool[Math.floor(Math.random() * pool.length)]
-    setBadges(Array.from({ length: CAT_PATHS.length }, () => pick()))
+    const pickDistinct = () => {
+      const p = warmPoolRef.current
+      const taken = new Set(lockedDishesRef.current.map(d => d && d.id))
+      const avail = p.filter(d => !taken.has(d.id))
+      const src = avail.length ? avail : p
+      return src.length ? src[Math.floor(Math.random() * src.length)] : null
+    }
 
     // All badges keep rolling until each one locks
     const rollId = window.setInterval(() => {
       if (!mountedRef.current) return
-      setBadges(prev => prev.map((d, i) => (lockedRef.current[i] ? d : pick())))
+      setBadges(prev => prev.map((d, i) => (lockedRef.current[i] ? d : pick() || d)))
     }, 280)
     timersRef.current.push(rollId)
 
-    // Staggered locks, like the reference: ~4s, ~7s, ~10s
+    // Staggered locks scheduled from click time, like the reference: ~4s, ~7s, ~10s
     LOCK_AT.forEach((ms, i) => {
       const id = window.setTimeout(() => {
         if (!mountedRef.current) return
+        const d = pickDistinct()
         lockedRef.current[i] = true
         setLocked(prev => { const n = [...prev]; n[i] = true; return n })
-        setBadges(prev => { const n = [...prev]; n[i] = pick() || n[i]; return n })
+        setBadges(prev => {
+          const n = [...prev]
+          if (d) { n[i] = d; lockedDishesRef.current.push(d) }
+          return n
+        })
         play('tick', 0.3)
       }, ms)
       timersRef.current.push(id)
@@ -183,6 +202,14 @@ export default function HoiMeo() {
       setPhase('revealed')
     }, LOCK_AT[LOCK_AT.length - 1] + 400)
     timersRef.current.push(doneId)
+
+    // Cold-start: pool not warmed yet — refill so the live roll picks it up
+    if (!warmPoolRef.current.length) {
+      try {
+        const fresh = (await Promise.all(Array.from({ length: 10 }, () => fetchRandomDish()))).filter(Boolean)
+        if (fresh.length) warmPoolRef.current = fresh
+      } catch {}
+    }
   }, [phase, unlockAudio, play, clearTimers])
 
   const reset = useCallback(() => {
@@ -199,7 +226,7 @@ export default function HoiMeo() {
   return (
     <div className={`cat-stage ${phase === 'rolling' ? 'rolling' : ''} ${phase === 'revealed' ? 'showing-results results-entering' : ''}`}>
       <div className="cat-video-wrap">
-        <video ref={videoRef} src={VIDEO_URL} loop muted={muted} playsInline preload="auto" poster="/images/fallback.svg" />
+        <video ref={videoRef} src={VIDEO_URL} muted={muted} playsInline preload="auto" poster="/images/fallback.svg" />
         {CAT_PATHS.map((_, i) => {
             const dish = badges[i]
             const isLocked = locked[i]
