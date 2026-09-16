@@ -2708,6 +2708,22 @@ body {
 .cat-badge:not(.locked) .cat-lock-ring,
 .cat-badge:not(.locked) .cat-lock-sparks { display: none; }
 
+.cat-debug-hud {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 40;
+  background: #10140f dd;
+  background: rgba(16, 20, 15, 0.88);
+  color: #b9ff8c;
+  font: 11px/1.45 Consolas, monospace;
+  padding: 6px 9px;
+  border-radius: 7px;
+  border: 1px solid #4c5a42;
+  white-space: pre-wrap;
+  pointer-events: none;
+  max-width: 96%;
+}
 /* Mute button */
 .cat-mute {
   position: absolute;

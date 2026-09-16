@@ -40,6 +40,9 @@ export default function HoiMeo() {
 
   const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+  const debug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1'
+  const debugRef = useRef(null)
+
   const unlockAudio = useCallback(() => {
     try {
       if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)()
@@ -117,6 +120,17 @@ export default function HoiMeo() {
             if (p[2]) el.classList.add('obscured')
             else el.classList.remove('obscured')
           }
+        }
+        if (debugRef.current) {
+          const parts = [
+            `t=${t.toFixed(2)}s frame=${fr}/${PATH_NFRAMES} ready=${video.readyState} paused=${video.paused} net=${video.networkState}`,
+            `W=${video.videoWidth}x${video.videoHeight}`,
+          ]
+          for (let k = 0; k < CAT_PATHS.length; k++) {
+            const p = CAT_PATHS[k][fr]
+            parts.push(`b${k}: ${(p[0] * 100).toFixed(1)}%,${(p[1] * 100).toFixed(1)}%${p[2] ? ' hidden' : ''}`)
+          }
+          debugRef.current.textContent = parts.join('  |  ')
         }
       }
       raf = requestAnimationFrame(tick)
@@ -239,6 +253,7 @@ export default function HoiMeo() {
           <button className="cat-mute" onClick={() => setMuted(m => !m)} type="button">
             {muted ? '🔇 Tắt' : '🔊 Bật'}
           </button>
+          {debug && <div ref={debugRef} className="cat-debug-hud" />}
         </div>
       )}
 
