@@ -251,7 +251,7 @@ export default function QuaTrua() {
           </div>
 
           {dish && (
-            <div className={`qd-dish rarity-card-${dish.rarity.key}`}>
+            <div className="qd-dish">
               <div className="qd-dish-head">
                 <span className="lootbox-result-label">GỢI Ý MÓN ĂN</span>
                 <RarityBadge rarity={dish.rarity} />
