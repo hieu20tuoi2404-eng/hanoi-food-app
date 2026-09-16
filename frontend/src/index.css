@@ -853,11 +853,6 @@ body {
   object-fit: cover;
   display: block;
 }
-.dish-card-rare {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-}
 .dish-card-meal {
   position: absolute;
   top: 8px;

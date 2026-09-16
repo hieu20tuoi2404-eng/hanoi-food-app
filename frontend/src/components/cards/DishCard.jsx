@@ -1,6 +1,5 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import RarityBadge from './RarityBadge'
 
 const MEAL_LABELS = {
   breakfast: 'Bữa sáng',
@@ -23,9 +22,6 @@ export default function DishCard({ dish }) {
             e.target.src = '/images/fallback.svg'
           }}
         />
-        <div className="dish-card-rare">
-          <RarityBadge rarity={dish.rarity} />
-        </div>
         <span className="dish-card-meal">{MEAL_LABELS[dish.meal_type] || dish.meal_type}</span>
       </div>
       <div className="dish-card-body">
