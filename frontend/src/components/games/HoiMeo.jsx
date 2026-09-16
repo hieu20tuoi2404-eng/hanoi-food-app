@@ -115,7 +115,8 @@ export default function HoiMeo() {
           const el = badgeRefs.current[k]
           if (!el) continue
           const p = CAT_PATHS[k][fr]
-          el.style.transform = `translate(-50%, -85%) translate(${p[0] * 100}%, ${p[1] * 100}%)`
+          el.style.left = `${p[0] * 100}%`
+          el.style.top = `${p[1] * 100}%`
           if (phaseRef.current === 'idle') {
             if (p[2]) el.classList.add('obscured')
             else el.classList.remove('obscured')

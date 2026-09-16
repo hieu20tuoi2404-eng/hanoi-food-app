@@ -2613,7 +2613,7 @@ body {
   animation: cat-video-out 0.18s ease-out both;
 }
 
-/* Badges on video — positions driven by JS follower (transform) */
+/* Badges on video — left/top driven by JS follower (% of video-wrap) */
 .cat-badge {
   position: absolute;
   left: 0;
@@ -2623,6 +2623,7 @@ body {
   z-index: 10;
   pointer-events: none;
   will-change: transform;
+  transform: translate(-50%, -85%);
   transition: opacity 0.18s ease-out;
 }
 .cat-badge.obscured { opacity: 0; }
