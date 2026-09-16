@@ -111,6 +111,42 @@ export default function HoiMeo() {
     return () => cancelAnimationFrame(raf)
   }, [reducedMotion])
 
+  // Robust playback bootstrap: retry play() + force load if stalled
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+    let tries = 0
+    let stalledAt = 0
+    let loadTimer = 0
+    const attempt = () => {
+      v.play().catch(() => {
+        if (tries < 6) { tries += 1; window.setTimeout(attempt, 400) }
+      })
+    }
+    const onData = () => {
+      v.play().catch(() => {})
+      stalledAt = 0
+    }
+    v.addEventListener('loadeddata', onData)
+    v.addEventListener('canplay', onData)
+    v.addEventListener('play', onData)
+    attempt()
+    loadTimer = window.setInterval(() => {
+      if (v.readyState === 0 && !v.paused && v.networkState === 2 && v.currentTime === 0) {
+        stalledAt += 1
+        if (stalledAt >= 8) { v.load(); v.play().catch(() => {}); stalledAt = 0 }
+      } else {
+        stalledAt = 0
+      }
+    }, 250)
+    return () => {
+      clearInterval(loadTimer)
+      v.removeEventListener('loadeddata', onData)
+      v.removeEventListener('canplay', onData)
+      v.removeEventListener('play', onData)
+    }
+  }, [])
+
   const kick = useCallback(async () => {
     if (phase !== 'idle') return
     unlockAudio()
