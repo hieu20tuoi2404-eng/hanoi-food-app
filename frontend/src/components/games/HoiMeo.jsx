@@ -100,20 +100,6 @@ export default function HoiMeo() {
     return () => clearInterval(id)
   }, [phase])
 
-  // Random dish cycling while idle: badges keep getting new random foods
-  // while still following the cats (trang truanayangi: badges "rolling" qua các món)
-  useEffect(() => {
-    if (phase !== 'idle') return
-    const load = async () => {
-      try {
-        const results = await Promise.all(CAT_PATHS.map(() => fetchRandomDish()))
-        if (mountedRef.current && phaseRef.current === 'idle') setBadges(results)
-      } catch {}
-    }
-    const id = window.setInterval(load, 4000)
-    return () => clearInterval(id)
-  }, [phase])
-
   // Time-synced follower: badges follow real-site cat paths with the video playhead
   useEffect(() => {
     if (reducedMotion) return
@@ -153,40 +139,10 @@ export default function HoiMeo() {
     return () => cancelAnimationFrame(raf)
   }, [reducedMotion])
 
-  // Robust playback bootstrap: retry play() + force load if stalled
+  // Preload video data on mount (shows first frame, does NOT autoplay)
   useEffect(() => {
     const v = videoRef.current
-    if (!v) return
-    let tries = 0
-    let stalledAt = 0
-    let loadTimer = 0
-    const attempt = () => {
-      v.play().catch(() => {
-        if (tries < 6) { tries += 1; window.setTimeout(attempt, 400) }
-      })
-    }
-    const onData = () => {
-      v.play().catch(() => {})
-      stalledAt = 0
-    }
-    v.addEventListener('loadeddata', onData)
-    v.addEventListener('canplay', onData)
-    v.addEventListener('play', onData)
-    attempt()
-    loadTimer = window.setInterval(() => {
-      if (v.readyState === 0 && !v.paused && v.networkState === 2 && v.currentTime === 0) {
-        stalledAt += 1
-        if (stalledAt >= 8) { v.load(); v.play().catch(() => {}); stalledAt = 0 }
-      } else {
-        stalledAt = 0
-      }
-    }, 250)
-    return () => {
-      clearInterval(loadTimer)
-      v.removeEventListener('loadeddata', onData)
-      v.removeEventListener('canplay', onData)
-      v.removeEventListener('play', onData)
-    }
+    if (v) v.load()
   }, [])
 
   const kick = useCallback(async () => {
@@ -197,6 +153,17 @@ export default function HoiMeo() {
     setWinnerDish(null)
     setError('')
     play('open', 0.7)
+
+    // Start video (cats run) + load 3 random dishes into badges immediately
+    const v = videoRef.current
+    if (v) {
+      v.currentTime = 0
+      v.play().catch(() => {})
+    }
+    try {
+      const init = await Promise.all(CAT_PATHS.map(() => fetchRandomDish()))
+      if (mountedRef.current) setBadges(init)
+    } catch {}
 
     try {
       const winner = await fetchRandomDish()
@@ -237,7 +204,7 @@ export default function HoiMeo() {
     <div className={`cat-stage ${phase === 'spinning' ? 'spinning' : ''} ${phase === 'revealed' ? 'showing-results results-entering' : ''}`}>
       {!reducedMotion && (
         <div className="cat-video-wrap">
-          <video ref={videoRef} src={VIDEO_URL} autoPlay loop muted={muted} playsInline poster="/images/fallback.svg" />
+          <video ref={videoRef} src={VIDEO_URL} loop muted={muted} playsInline poster="/images/fallback.svg" />
           {CAT_PATHS.map((_, i) => {
             const dish = badges[i]
             const isLocked = phase === 'revealed' && winnerIdx === i

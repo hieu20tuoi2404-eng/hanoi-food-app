@@ -2618,12 +2618,12 @@ body {
   position: absolute;
   left: 0;
   top: 0;
-  width: 7%;
+  width: 8.5%;
   aspect-ratio: 1;
   z-index: 10;
   pointer-events: none;
   will-change: transform;
-  transform: translate(-50%, -85%);
+  transform: translate(-50%, -80%);
   transition: opacity 0.18s ease-out;
 }
 .cat-badge.obscured { opacity: 0; }
@@ -2749,10 +2749,7 @@ body {
   justify-content: center;
   padding: 4px 14px 6px;
 }
-/* Kick → cats jump + badges roll like a reel */
-.cat-stage.spinning .cat-video-wrap {
-  animation: cat-jump 0.5s ease-in-out infinite;
-}
+/* Kick → badges roll like a reel (video plays naturally = cats move) */
 .cat-stage.spinning .cat-badge-content {
   animation: cat-spin-roll 0.5s linear infinite;
 }
