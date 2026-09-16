@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import RarityBadge from '../cards/RarityBadge'
+import { CAT_PATHS, PATH_FPS, PATH_NFRAMES } from './catPaths'
 
 const API = import.meta.env.VITE_API_BASE || ''
 
@@ -11,14 +12,6 @@ const RARITY_COLORS = {
   legendary: '#d65b64',
   mythic: '#d65b64',
 }
-
-const CAT_POSITIONS = [
-  { left: '18%', top: '62%' },
-  { left: '40%', top: '57%' },
-  { left: '50%', top: '53%' },
-  { left: '62%', top: '52%' },
-  { left: '83%', top: '60%' },
-]
 
 const VIDEO_URL = 'https://github.com/hieu20tuoi2404-eng/video/raw/main/cats-office-wide.mp4'
 
@@ -31,15 +24,19 @@ const fetchRandomDish = async () => {
 const delay = (ms) => new Promise(r => setTimeout(r, ms))
 
 export default function HoiMeo() {
-  const [badges, setBadges] = useState(Array.from({ length: CAT_POSITIONS.length }, () => null))
+  const [badges, setBadges] = useState(Array.from({ length: CAT_PATHS.length }, () => null))
   const [phase, setPhase] = useState('idle') // idle | spinning | revealed
   const [winnerIdx, setWinnerIdx] = useState(null)
   const [winnerDish, setWinnerDish] = useState(null)
   const [error, setError] = useState('')
   const [muted, setMuted] = useState(true)
+  const videoRef = useRef(null)
+  const badgeRefs = useRef([])
   const audioRef = useRef({})
   const audioCtxRef = useRef(null)
   const mountedRef = useRef(true)
+
+  const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   const unlockAudio = useCallback(() => {
     try {
@@ -64,26 +61,55 @@ export default function HoiMeo() {
     })
   }, [])
 
-  // Load one random dish per cat position
+  const play = useCallback((key, vol = 0.5) => {
+    if (muted) return
+    const a = audioRef.current[key]
+    if (a) { a.currentTime = 0; a.volume = vol; a.play().catch(() => {}) }
+  }, [muted])
+
+  // Load one random dish per badge (3 cats)
   useEffect(() => {
     let cancelled = false
     const load = async () => {
       try {
-        const results = await Promise.all(CAT_POSITIONS.map(() => fetchRandomDish()))
+        const results = await Promise.all(CAT_PATHS.map(() => fetchRandomDish()))
         if (!cancelled) setBadges(results)
       } catch {
-        setError('Không lấy được món — kiểm tra kết nối')
+        if (!cancelled) setError('Không lấy được món — kiểm tra kết nối')
       }
     }
     load()
     return () => { cancelled = true }
   }, [])
 
-  const play = useCallback((key, vol = 0.5) => {
-    if (muted) return
-    const a = audioRef.current[key]
-    if (a) { a.currentTime = 0; a.volume = vol; a.play().catch(() => {}) }
-  }, [muted])
+  // Time-synced follower: badges follow cat paths with the video playhead
+  useEffect(() => {
+    if (reducedMotion) return
+    let raf = 0
+    const tick = () => {
+      const video = videoRef.current
+      if (video) {
+        let t = video.currentTime
+        if (!isFinite(t)) t = 0
+        const fx = t * PATH_FPS
+        const i = Math.floor(fx) % PATH_NFRAMES
+        const j = (i + 1) % PATH_NFRAMES
+        const f = fx - Math.floor(fx)
+        for (let k = 0; k < CAT_PATHS.length; k++) {
+          const el = badgeRefs.current[k]
+          if (!el) continue
+          const p1 = CAT_PATHS[k][i]
+          const p2 = CAT_PATHS[k][j]
+          const x = p1[0] + (p2[0] - p1[0]) * f
+          const y = p1[1] + (p2[1] - p1[1]) * f
+          el.style.transform = `translate(-50%, -50%) translate(${x * 100}%, ${y * 100}%)`
+        }
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [reducedMotion])
 
   const kick = useCallback(async () => {
     if (phase !== 'idle') return
@@ -99,7 +125,7 @@ export default function HoiMeo() {
       await delay(950)
       if (!mountedRef.current) return
       play('tick', 0.3)
-      const idx = Math.floor(Math.random() * CAT_POSITIONS.length)
+      const idx = Math.floor(Math.random() * CAT_PATHS.length)
       setWinnerIdx(idx)
       setWinnerDish(winner)
       setBadges(prev => {
@@ -108,6 +134,7 @@ export default function HoiMeo() {
         return next
       })
       await delay(350)
+      if (!mountedRef.current) return
       play('reveal', 0.8)
       setPhase('revealed')
     } catch (e) {
@@ -123,19 +150,17 @@ export default function HoiMeo() {
     setWinnerDish(null)
     setError('')
     try {
-      const results = await Promise.all(CAT_POSITIONS.map(() => fetchRandomDish()))
+      const results = await Promise.all(CAT_PATHS.map(() => fetchRandomDish()))
       if (mountedRef.current) setBadges(results)
     } catch {}
   }, [])
-
-  const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   return (
     <div className={`cat-stage ${phase === 'revealed' ? 'showing-results results-entering' : ''}`}>
       {!reducedMotion && (
         <div className="cat-video-wrap">
-          <video src={VIDEO_URL} autoPlay loop muted={muted} playsInline poster="/images/fallback.svg" />
-          {CAT_POSITIONS.map((pos, i) => {
+          <video ref={videoRef} src={VIDEO_URL} autoPlay loop muted={muted} playsInline poster="/images/fallback.svg" />
+          {CAT_PATHS.map((_, i) => {
             const dish = badges[i]
             const isLocked = phase === 'revealed' && winnerIdx === i
             const obscured = phase !== 'idle' && !isLocked
@@ -145,8 +170,9 @@ export default function HoiMeo() {
             return (
               <div
                 key={i}
+                ref={el => { badgeRefs.current[i] = el }}
                 className={`cat-badge ${isLocked ? 'locked' : ''} ${obscured ? 'obscured' : ''} ${dish ? 'ready' : 'waiting'}`}
-                style={{ left: pos.left, top: pos.top, '--cat-tier-color': tierColor }}
+                style={{ '--cat-tier-color': tierColor }}
               >
                 {isLocked && (<><div className="cat-lock-ring" /><div className="cat-lock-sparks" /></>)}
                 <div className="cat-badge-content">
@@ -172,7 +198,6 @@ export default function HoiMeo() {
         </div>
       )}
 
-      {/* Spin action */}
       {phase !== 'revealed' && (
         <div className="cat-kick-wrap">
           <button className="cat-kick" onClick={kick} disabled={phase !== 'idle'} type="button" aria-busy={phase === 'spinning'}>
@@ -189,8 +214,8 @@ export default function HoiMeo() {
         <div className="cat-results">
           <div className="cat-results-heading">
             <span>🐱 HỘI MÈO</span>
-            <h2>Em mèo này chốt cho bạn món!</h2>
-            <p>Món {winnerDish.name} xuất hiện trên đầu một em mèo 🎉</p>
+            <h2>Con mèo này chốt cho bạn món!</h2>
+            <p>Món {winnerDish.name} hiện lên trên đầu một em mèo 🎉</p>
           </div>
           <div className="cat-result-list">
             <div className="cat-result-card cat-card-enter is-selected" style={{ '--cat-tier-color': RARITY_COLORS[winnerDish.rarity?.key] || '#cbd7b7' }}>

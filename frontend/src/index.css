@@ -2609,23 +2609,19 @@ body {
   animation: cat-video-out 0.18s ease-out both;
 }
 
-/* Badges on video */
+/* Badges on video — positions driven by JS follower (transform) */
 .cat-badge {
   position: absolute;
+  left: 0;
+  top: 0;
   width: 11%;
   aspect-ratio: 1;
-  transform: translate(-50%, -50%);
   z-index: 10;
   pointer-events: none;
-  transition: transform 0.12s ease-out, opacity 0.18s ease-out, filter 0.12s;
-  animation: cat-float 3s ease-in-out infinite;
+  will-change: transform;
+  transition: opacity 0.18s ease-out;
 }
-.cat-badge:nth-child(2) { animation-delay: -0.6s; animation-duration: 3.4s; }
-.cat-badge:nth-child(3) { animation-delay: -1.2s; animation-duration: 2.8s; }
-.cat-badge:nth-child(4) { animation-delay: -0.3s; animation-duration: 3.2s; }
-.cat-badge:nth-child(5) { animation-delay: -1.8s; animation-duration: 3.6s; }
-.cat-badge.locked { transform: translate(-50%, -50%) scale(1.18); animation: cat-lock 0.24s cubic-bezier(0.16,1,0.3,1); }
-.cat-badge.obscured { opacity: 0; pointer-events: none; }
+.cat-badge.obscured { opacity: 0; }
 .cat-badge.waiting .cat-badge-content {
   background: #f3f0e7;
   border-color: #cbd7b7;
@@ -2653,6 +2649,7 @@ body {
 }
 .cat-badge.locked .cat-badge-content {
   border-color: var(--cat-tier-color);
+  transform: scale(1.18);
   animation: cat-lock 0.24s cubic-bezier(0.16,1,0.3,1);
 }
 .cat-question {
@@ -2757,6 +2754,12 @@ body {
   filter: saturate(0.6) brightness(0.9);
   animation: cat-pulse 0.7s ease-in-out infinite;
 }
+.cat-motion-note {
+  padding: 40px 20px;
+  text-align: center;
+  color: #f3f0e7;
+}
+.cat-motion-note .cat-question { font-size: 18px; }
 @keyframes cat-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.65; }
@@ -3003,10 +3006,6 @@ body {
 .cat-reduced-btn span { font-size: 28px; }
 
 /* ===== Keyframes ===== */
-@keyframes cat-float {
-  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-  50% { transform: translate(-50%, -50%) translateY(-6px); }
-}
 @keyframes cat-lock {
   0% { transform: scale(0.9); }
   30% { transform: scale(1.16); box-shadow: 0 0 20px var(--cat-tier-color); }
