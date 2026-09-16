@@ -8,6 +8,7 @@ import ZodiacWidget from '../components/widgets/ZodiacWidget'
 import FateDice from '../components/games/FateDice'
 import GroupVote from '../components/games/GroupVote'
 import KhoBau from '../components/games/KhoBau'
+import HoiMeo from '../components/games/HoiMeo'
 import { Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 
@@ -133,6 +134,9 @@ export default function Home() {
 
       {/* Quẻ trưa */}
       <QuaTrua />
+
+      {/* Hội Mèo */}
+      <HoiMeo />
 
       {/* Category tabs */}
       <div className="category-bar">
