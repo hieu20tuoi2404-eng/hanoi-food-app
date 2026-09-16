@@ -38,8 +38,6 @@ export default function HoiMeo() {
   const phaseRef = useRef(phase)
   phaseRef.current = phase
 
-  const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
   const debug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1'
   const debugRef = useRef(null)
 
@@ -101,7 +99,6 @@ export default function HoiMeo() {
 
   // Time-synced follower: badges follow real-site cat paths with the video playhead
   useEffect(() => {
-    if (reducedMotion) return
     let raf = 0
     const tick = () => {
       const video = videoRef.current
@@ -136,7 +133,7 @@ export default function HoiMeo() {
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [reducedMotion])
+  }, [])
 
   // Preload video data on mount (shows first frame, does NOT autoplay)
   useEffect(() => {
@@ -166,7 +163,7 @@ export default function HoiMeo() {
 
     try {
       const winner = await fetchRandomDish()
-      await delay(950)
+      await delay(3600)
       if (!mountedRef.current) return
       play('tick', 0.3)
       const idx = Math.floor(Math.random() * CAT_PATHS.length)
@@ -201,10 +198,9 @@ export default function HoiMeo() {
 
   return (
     <div className={`cat-stage ${phase === 'spinning' ? 'spinning' : ''} ${phase === 'revealed' ? 'showing-results results-entering' : ''}`}>
-      {!reducedMotion && (
-        <div className="cat-video-wrap">
-          <video ref={videoRef} src={VIDEO_URL} loop muted={muted} playsInline poster="/images/fallback.svg" />
-          {CAT_PATHS.map((_, i) => {
+      <div className="cat-video-wrap">
+        <video ref={videoRef} src={VIDEO_URL} loop muted={muted} playsInline preload="auto" poster="/images/fallback.svg" />
+        {CAT_PATHS.map((_, i) => {
             const dish = badges[i]
             const isLocked = phase === 'revealed' && winnerIdx === i
             const obscured = phase !== 'idle' && !isLocked
@@ -234,14 +230,7 @@ export default function HoiMeo() {
             {muted ? '🔇 Tắt' : '🔊 Bật'}
           </button>
           {debug && <div ref={debugRef} className="cat-debug-hud" />}
-        </div>
-      )}
-
-      {reducedMotion && (
-        <div className="cat-motion-note">
-          <p className="cat-question">Mỗi em mèo có một món ngon trên đầu!</p>
-        </div>
-      )}
+      </div>
 
       {phase !== 'revealed' && (
         <div className="cat-kick-wrap">

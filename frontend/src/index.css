@@ -2753,6 +2753,13 @@ body {
 .cat-stage.spinning .cat-badge-content {
   animation: cat-spin-roll 0.5s linear infinite;
 }
+/* Respect reduced-motion: keep everything visible, just stop decorative motion */
+@media (prefers-reduced-motion: reduce) {
+  .cat-badge-content,
+  .cat-stage.spinning .cat-badge-content {
+    animation: none !important;
+  }
+}
 .cat-kick {
   min-height: 46px;
   padding: 10px 26px;
