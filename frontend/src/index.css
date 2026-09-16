@@ -2569,3 +2569,258 @@ body {
   .qd-coin { width: 44px; height: 44px; font-size: 0.95rem; }
   .qd-domains { grid-template-columns: 1fr; }
 }
+
+/* ===== Hội Mèo – video background + cat pick ===== */
+.hoi-meo {
+  position: relative;
+  margin: 1.5rem auto;
+  max-width: 960px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.hoi-meo-video-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.hoi-meo-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hoi-meo-video-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.55) 100%);
+}
+.hoi-meo-content {
+  position: relative;
+  z-index: 1;
+  padding: 1.5rem;
+  color: #fff;
+}
+.hoi-meo-head {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.hoi-meo-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #fde047;
+  background: rgba(253,224,71,0.18);
+  border: 1px solid rgba(253,224,71,0.35);
+  padding: 4px 16px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+.hoi-meo-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  margin: 6px 0 4px;
+}
+.hoi-meo-sub {
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.85);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+/* Cat cards grid */
+.hoi-meo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-top: 1rem;
+}
+.hoi-meo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 12px;
+  border-radius: 16px;
+  border: 2px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.15s, background 0.25s;
+}
+.hoi-meo-card:hover {
+  border-color: var(--cat-color);
+  box-shadow: 0 4px 18px 0 color-mix(in srgb, var(--cat-color) 35%, transparent);
+  transform: translateY(-3px);
+  background: rgba(255,255,255,0.14);
+}
+.hoi-meo-card.selected {
+  border-color: var(--cat-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cat-color) 35%, transparent), 0 8px 24px color-mix(in srgb, var(--cat-color) 25%, transparent);
+  background: rgba(255,255,255,0.18);
+}
+.hoi-meo-card.disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+.hoi-meo-emoji {
+  font-size: 2.6rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+.hoi-meo-card strong {
+  font-size: 0.95rem;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.hoi-meo-desc {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.75);
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+/* Status */
+.hoi-meo-loading,
+.hoi-meo-error {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+.hoi-meo-loading { color: #fde047; text-shadow: 0 0 8px rgba(253,224,71,0.6); }
+.hoi-meo-error { color: #fca5a5; text-shadow: 0 0 8px rgba(252,165,165,0.6); }
+
+/* Result */
+.hoi-meo-result {
+  margin-top: 1.5rem;
+  border-radius: 18px;
+  border: 2px solid rgba(255,255,255,0.22);
+  background: rgba(20,20,30,0.92);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+}
+.hoi-meo-result-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px 0;
+}
+.hoi-meo-result-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+}
+.hoi-meo-result-main {
+  display: flex;
+  gap: 18px;
+  padding: 12px 18px 18px;
+}
+.hoi-meo-result-img {
+  width: 170px;
+  height: 115px;
+  object-fit: cover;
+  border-radius: 14px;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.12);
+}
+.hoi-meo-result-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+.hoi-meo-result-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+}
+.hoi-meo-result-meta {
+  font-size: 0.88rem;
+  color: rgba(255,255,255,0.7);
+  display: flex;
+  gap: 16px;
+}
+.hoi-meo-result-desc {
+  font-size: 0.88rem;
+  color: rgba(255,255,255,0.65);
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+.hoi-meo-result-link {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fde047;
+  text-decoration: none;
+  text-shadow: 0 0 6px rgba(253,224,71,0.5);
+}
+.hoi-meo-result-link:hover { text-decoration: underline; }
+.hoi-meo-again {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: #fde047;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.hoi-meo-again:hover { background: rgba(253,224,71,0.18); color: #fff; }
+
+/* History */
+.hoi-meo-history {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+.hoi-meo-history h3 {
+  font-size: 0.88rem;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 10px;
+}
+.hoi-meo-history-list {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hoi-meo-history-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(6px);
+  text-decoration: none;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: border-color 0.2s, background 0.2s;
+}
+.hoi-meo-history-item:hover { border-color: #fde047; background: rgba(253,224,71,0.12); }
+.hoi-meo-history-item img {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* Rarity result border for HoiMeo */
+.hoi-meo-result.rarity-card-legendary {
+  border-color: #e4c879;
+  box-shadow: 0 0 20px 4px color-mix(in srgb, #e4c879 45%, transparent), 0 12px 40px rgba(0,0,0,0.5);
+}
+
+@media (max-width: 640px) {
+  .hoi-meo { border-radius: 16px; }
+  .hoi-meo-content { padding: 1rem; }
+  .hoi-meo-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .hoi-meo-result-main { flex-direction: column; align-items: center; }
+  .hoi-meo-result-img { width: 100%; height: auto; max-width: 280px; }
+  .hoi-meo-title { font-size: 1.35rem; }
+}
