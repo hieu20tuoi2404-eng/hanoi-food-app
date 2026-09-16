@@ -234,7 +234,7 @@ export default function HoiMeo() {
   }, [])
 
   return (
-    <div className={`cat-stage ${phase === 'revealed' ? 'showing-results results-entering' : ''}`}>
+    <div className={`cat-stage ${phase === 'spinning' ? 'spinning' : ''} ${phase === 'revealed' ? 'showing-results results-entering' : ''}`}>
       {!reducedMotion && (
         <div className="cat-video-wrap">
           <video ref={videoRef} src={VIDEO_URL} autoPlay loop muted={muted} playsInline poster="/images/fallback.svg" />
