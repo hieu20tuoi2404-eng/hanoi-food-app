@@ -2614,8 +2614,8 @@ body {
 }
 
 /* Badges on video — left/top driven by JS follower (% of video-wrap).
-   Reference site: badge ≈ 4.1% of wrap, transform translate(-50%, -100%)
-   (badge bottom-center anchored exactly on the cat's head point). */
+   Anchored on the cat's head point and translated to center (-50%, -50%)
+   so the food image sits right ON the head, as if glued. */
 .cat-badge {
   position: absolute;
   left: 0;
@@ -2625,7 +2625,7 @@ body {
   z-index: 10;
   pointer-events: none;
   will-change: transform;
-  transform: translate(-50%, -100%);
+  transform: translate(-50%, -50%);
   transition: opacity 0.18s ease-out;
 }
 .cat-badge.obscured { opacity: 0; }
