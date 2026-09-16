@@ -2632,13 +2632,13 @@ body {
   height: 100%;
   background: #f3f0e7;
   border: 2px solid var(--cat-tier-color, #cbd7b7);
-  border-radius: 50%;
+  border-radius: 10px;
   box-shadow: 0 3px 12px #0009, 0 0 0 0 var(--cat-tier-color);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  transition: box-shadow 0.15s, border-color 0.15s, transform 0.12s;
+  animation: cat-food-bob 3s ease-in-out infinite;
 }
 .cat-badge-content .food-image {
   width: 100%;
@@ -2646,6 +2646,7 @@ body {
   object-fit: cover;
   display: block;
   filter: saturate(1.05);
+  border-radius: 8px;
 }
 .cat-badge.locked .cat-badge-content {
   border-color: var(--cat-tier-color);
@@ -3006,6 +3007,10 @@ body {
 .cat-reduced-btn span { font-size: 28px; }
 
 /* ===== Keyframes ===== */
+@keyframes cat-food-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
 @keyframes cat-lock {
   0% { transform: scale(0.9); }
   30% { transform: scale(1.16); box-shadow: 0 0 20px var(--cat-tier-color); }

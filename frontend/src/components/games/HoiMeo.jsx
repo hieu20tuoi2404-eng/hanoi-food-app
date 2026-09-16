@@ -102,7 +102,7 @@ export default function HoiMeo() {
           const p2 = CAT_PATHS[k][j]
           const x = p1[0] + (p2[0] - p1[0]) * f
           const y = p1[1] + (p2[1] - p1[1]) * f
-          el.style.transform = `translate(-50%, -50%) translate(${x * 100}%, ${y * 100}%)`
+          el.style.transform = `translate(-50%, -100%) translate(${x * 100}%, ${y * 100}%)`
         }
       }
       raf = requestAnimationFrame(tick)
