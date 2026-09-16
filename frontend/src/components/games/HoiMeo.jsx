@@ -35,6 +35,8 @@ export default function HoiMeo() {
   const audioRef = useRef({})
   const audioCtxRef = useRef(null)
   const mountedRef = useRef(true)
+  const phaseRef = useRef(phase)
+  phaseRef.current = phase
 
   const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -82,7 +84,7 @@ export default function HoiMeo() {
     return () => { cancelled = true }
   }, [])
 
-  // Time-synced follower: badges follow cat paths with the video playhead
+  // Time-synced follower: badges follow real-site cat paths with the video playhead
   useEffect(() => {
     if (reducedMotion) return
     let raf = 0
@@ -91,18 +93,16 @@ export default function HoiMeo() {
       if (video) {
         let t = video.currentTime
         if (!isFinite(t)) t = 0
-        const fx = t * PATH_FPS
-        const i = Math.floor(fx) % PATH_NFRAMES
-        const j = (i + 1) % PATH_NFRAMES
-        const f = fx - Math.floor(fx)
+        const fr = Math.max(0, Math.min(PATH_NFRAMES - 1, Math.round(t * PATH_FPS)))
         for (let k = 0; k < CAT_PATHS.length; k++) {
           const el = badgeRefs.current[k]
           if (!el) continue
-          const p1 = CAT_PATHS[k][i]
-          const p2 = CAT_PATHS[k][j]
-          const x = p1[0] + (p2[0] - p1[0]) * f
-          const y = p1[1] + (p2[1] - p1[1]) * f
-          el.style.transform = `translate(-50%, -100%) translate(${x * 100}%, ${y * 100}%)`
+          const p = CAT_PATHS[k][fr]
+          el.style.transform = `translate(-50%, -100%) translate(${p[0] * 100}%, ${p[1] * 100}%)`
+          if (phaseRef.current === 'idle') {
+            if (p[2]) el.classList.add('obscured')
+            else el.classList.remove('obscured')
+          }
         }
       }
       raf = requestAnimationFrame(tick)
