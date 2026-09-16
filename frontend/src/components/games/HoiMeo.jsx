@@ -5,11 +5,11 @@ import RarityBadge from '../cards/RarityBadge'
 const API = import.meta.env.VITE_API_BASE || ''
 
 const CATS = [
-  { id: 'meo-an-sang', name: 'Mèo Sáng', emoji: '🐱', meal: 'breakfast', tierColor: '#fbbf24', left: '14%', top: '60%' },
-  { id: 'meo-trua', name: 'Mèo Trưa', emoji: '😺', meal: 'lunch', tierColor: '#fb923c', left: '35%', top: '52%' },
-  { id: 'meo-toi', name: 'Mèo Tối', emoji: '🐱‍👤', meal: 'dinner', tierColor: '#8b5cf6', left: '50%', top: '48%' },
-  { id: 'meo-an-vat', name: 'Mèo Vặt', emoji: '😸', meal: 'snack', tierColor: '#ec4899', left: '65%', top: '52%' },
-  { id: 'meo-nhau', name: 'Mèo Nhậu', emoji: '😾', meal: 'drinking', tierColor: '#ef4444', left: '86%', top: '60%' },
+  { id: 'meo-an-sang', name: 'Mèo Sáng', emoji: '🐱', meal: 'breakfast', tierColor: '#fbbf24', left: '18%', top: '62%' },
+  { id: 'meo-trua', name: 'Mèo Trưa', emoji: '😺', meal: 'lunch', tierColor: '#fb923c', left: '40%', top: '57%' },
+  { id: 'meo-toi', name: 'Mèo Tối', emoji: '🐱‍👤', meal: 'dinner', tierColor: '#8b5cf6', left: '50%', top: '53%' },
+  { id: 'meo-an-vat', name: 'Mèo Vặt', emoji: '😸', meal: 'snack', tierColor: '#ec4899', left: '62%', top: '52%' },
+  { id: 'meo-nhau', name: 'Mèo Nhậu', emoji: '😾', meal: 'drinking', tierColor: '#ef4444', left: '83%', top: '60%' },
 ]
 
 const VIDEO_URL = 'https://github.com/hieu20tuoi2404-eng/video/raw/main/cats-office-wide.mp4'
