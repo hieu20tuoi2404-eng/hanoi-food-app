@@ -2775,3 +2775,86 @@ body {
   .qd-coin { width: 44px; height: 44px; font-size: 0.95rem; }
   .qd-domains { grid-template-columns: 1fr; }
 }
+
+/* ─── Zodiac dancers (12 con giáp) ─── */
+.zodiac-stage {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 18px;
+  padding: 12px 8px;
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,200,0,0.07) 0%, transparent 100%);
+}
+.zodiac-dancer {
+  font-size: 1.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  animation: zodiac-bounce 1.3s ease-in-out infinite;
+  animation-delay: var(--z-delay, 0s);
+  filter: grayscale(0.28) opacity(0.62);
+  transition: filter 0.25s, transform 0.25s, box-shadow 0.25s, background 0.25s;
+}
+.zodiac-dancer:hover {
+  transform: translateY(-4px) scale(1.12);
+  filter: none;
+}
+.zodiac-dancer-highlight {
+  filter: none;
+  opacity: 1;
+  width: 52px;
+  height: 52px;
+  font-size: 2rem;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(245,158,11,0.25);
+  animation-duration: .95s;
+}
+.zodiac-dancer-winner {
+  filter: none;
+  opacity: 1;
+  width: 62px;
+  height: 62px;
+  font-size: 2.5rem;
+  border-color: #f8b500;
+  box-shadow: 0 0 0 3px rgba(248,181,0,0.45), 0 0 14px rgba(248,181,0,0.3);
+  background: #fffbe6;
+  animation: zodiac-celebrate .55s ease-in-out 3 forwards;
+  order: -1;
+}
+.hoi-meo-zodiac-note {
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 6px 0 10px;
+}
+.hoi-meo-zodiac-note span { font-style: normal; }
+@media (max-width: 640px) {
+  .zodiac-dancer,
+  .zodiac-dancer-highlight { width: 36px; height: 36px; font-size: 1.2rem; }
+  .zodiac-dancer-winner { width: 52px; height: 52px; font-size: 2rem; }
+  .zodiac-stage { gap: 5px 10px; padding: 8px 6px; }
+}
+@keyframes zodiac-bounce {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  20%      { transform: translateY(-38px) scaleX(.96,1.06); }
+  40%      { transform: translateY(-44px) scaleX(1.04,.94); }
+  60%      { transform: translateY(-18px) scaleY(1); }
+  80%      { transform: translateY(0) scaleY(.88); }
+}
+@keyframes zodiac-celebrate {
+  0%, 100% { transform: translateY(0) rotate(0) scale(1); }
+  50%      { transform: translateY(-68px) rotate(10deg) scale(1.18); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zodiac-dancer,
+  .zodiac-dancer-highlight,
+  .zodiac-dancer-winner { animation: none; }
+}

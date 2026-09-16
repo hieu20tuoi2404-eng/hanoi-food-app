@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import RarityBadge from '../cards/RarityBadge'
+import ZodiacDancers, { zodiacNow, zodiacForMeal } from './ZodiacDancers'
 
 const API = import.meta.env.VITE_API_BASE || ''
 
@@ -18,6 +19,12 @@ export default function HoiMeo() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
   const [rollHistory, setRollHistory] = useState([])
+
+  const nowZodiac = useMemo(() => zodiacNow(), [])
+  const winnerZodiac = useMemo(
+    () => (selected ? zodiacForMeal(selected.meal) : null),
+    [selected]
+  )
 
   const roll = useCallback(async (cat) => {
     setSelected(cat)
@@ -51,6 +58,15 @@ export default function HoiMeo() {
         <h2 className="hoi-meo-title">Hội Mèo Hà Nội</h2>
         <p className="hoi-meo-sub">Chọn một em mèo để nó gợi ý bữa ăn cho bạn!</p>
       </div>
+
+      <ZodiacDancers highlight={nowZodiac.id} active={result ? winnerZodiac?.id : null} />
+
+      <p className="hoi-meo-zodiac-note">
+        Giờ {nowZodiac.name} · Con {nowZodiac.animal} đang dẫn đoàn <span>{nowZodiac.emoji}</span>
+        {result && winnerZodiac && result && (
+          <> — {winnerZodiac.emoji} {winnerZodiac.name} (con {winnerZodiac.animal}) nhảy mừng!</>
+        )}
+      </p>
 
       <div className="hoi-meo-grid">
         {CATS.map((cat) => (
