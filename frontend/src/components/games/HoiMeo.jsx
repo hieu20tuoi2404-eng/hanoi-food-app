@@ -72,6 +72,20 @@ export default function HoiMeo() {
     if (a) { a.currentTime = 0; a.volume = vol; a.play().catch(() => {}) }
   }, [muted])
 
+  // Load one random dish per badge (3 cats) — badges always visible on heads,
+  // static until user clicks KICK (then random reels start)
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const results = await Promise.all(CAT_PATHS.map(() => fetchRandomDish()))
+        if (!cancelled) setBadges(results)
+      } catch {}
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
   // Fast reel roll while spinning: food images swap every 350ms
   useEffect(() => {
     if (phase !== 'spinning') return
