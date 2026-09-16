@@ -1,21 +1,14 @@
-﻿import React, { useState, useEffect, useRef } from 'react'
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import RarityBadge from '../cards/RarityBadge'
 import { useApp } from '../../context/AppContext'
+import { resolveHexagram, TRI_EMOJI } from '../../data/kinhdich'
 
 const API = import.meta.env.VITE_API_BASE || ''
 
-const CARD_W = 176
-const GAP = 14
-const STEP = CARD_W + GAP
-const WINNER_INDEX = 14
-const AFTER_WINNER = 8
-const REEL_LEN = WINNER_INDEX + AFTER_WINNER + 1
-const SPIN_MS = 2600
-
 const KINDS = [
   { id: '', label: 'Bất kỳ', emoji: '🎲' },
-  { id: 'breakfast', label: 'Bữa sáng', emoji: '☕' },
+  { id: 'breakfast', label: 'Bữa sáng', emoji: '☀️' },
   { id: 'lunch', label: 'Bữa trưa', emoji: '🍚' },
   { id: 'dinner', label: 'Bữa tối', emoji: '🌙' },
   { id: 'snack', label: 'Ăn vặt', emoji: '🍿' },
@@ -29,27 +22,44 @@ const BUDGETS = [
   { value: 200000, label: '≤ 200k', emoji: '🍱' },
 ]
 
-const RARITY_TIER = {
-  common: 'THƯỜNG',
-  rare: 'HIẾM',
-  epic: 'SỬ THI',
-  legendary: 'HUYỀN THOẠI',
-}
-
-const RARITY_COLOR = {
-  common: '#9d998d',
-  rare: '#71a69a',
-  epic: '#aa8cbb',
-  legendary: '#e4c879',
-}
-
 function shuffle(arr) {
   const a = arr.slice()
   for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
+    const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]
   }
   return a
+}
+
+const COIN_INTERVAL = 700
+const LINE_DRAW_MS = 300
+
+function Coin({ face, animating }) {
+  const cls = `qd-coin ${face === 'duong' ? 'qd-coin-yang' : 'qd-coin-yin'} ${animating ? 'qd-coin-anim' : ''}`
+  return (
+    <div className={cls}>
+      <span className="qd-coin-face">{face === 'duong' ? '☰' : '☷'}</span>
+      <span className="qd-coin-label">{face === 'duong' ? 'DƯƠNG' : 'ÂM'}</span>
+    </div>
+  )
+}
+
+function HexLine({ yang, moving, index, revealed }) {
+  if (!revealed) return <div className="qd-line qd-line-hidden"><span className="qd-line-num">{index + 1}</span></div>
+  if (yang) {
+    return (
+      <div className={`qd-line qd-line-solid ${moving ? 'qd-line-moving' : ''}`}>
+        <span className="qd-line-num">{index + 1}</span>
+        {moving && <span className="qd-dot">•</span>}
+      </div>
+    )
+  }
+  return (
+    <div className={`qd-line qd-line-broken ${moving ? 'qd-line-moving' : ''}`}>
+      <span className="qd-line-num">{index + 1}</span>
+      <span className="qd-gap" />
+      {moving && <span className="qd-dot">•</span>}
+    </div>
+  )
 }
 
 export default function QuaTrua() {
@@ -57,131 +67,123 @@ export default function QuaTrua() {
   const [pool, setPool] = useState([])
   const [kind, setKind] = useState('')
   const [budget, setBudget] = useState(0)
+
   const [phase, setPhase] = useState('idle')
-  const [reel, setReel] = useState([])
-  const [translate, setTranslate] = useState(0)
-  const [transition, setTransition] = useState('none')
-  const [result, setResult] = useState(null)
+  const [lines, setLines] = useState([])
+  const [currentToss, setCurrentToss] = useState(null)
+  const [tossIndex, setTossIndex] = useState(-1)
+  const [tosses, setTosses] = useState([])
+  const [hex, setHex] = useState(null)
+  const [dish, setDish] = useState(null)
   const [error, setError] = useState('')
-  const winRef = useRef(null)
+
   const timerRef = useRef(null)
 
   useEffect(() => {
     let cancelled = false
-    fetch(`${API}/api/dishes`)
-      .then((r) => r.json())
-      .then((list) => {
-        if (!cancelled) setPool(list)
-      })
-      .catch(() => {})
-    return () => {
-      cancelled = true
-      clearTimeout(timerRef.current)
-    }
+    fetch(`${API}/api/dishes`).then(r => r.json()).then(list => {
+      if (!cancelled) setPool(list)
+    }).catch(() => {})
+    return () => { cancelled = true; clearTimeout(timerRef.current) }
   }, [])
 
-  const spin = async () => {
-    if (phase === 'spinning') return
+  const reset = useCallback(() => {
+    setLines([])
+    setCurrentToss(null)
+    setTossIndex(-1)
+    setTosses([])
+    setHex(null)
+    setDish(null)
     setError('')
-    setResult(null)
-    setPhase('spinning')
+  }, [])
+
+  const startCast = useCallback(async () => {
+    if (phase === 'tossing' || phase === 'revealing') return
+    reset()
+    setPhase('tossing')
+
     try {
-      const params = new URLSearchParams()
-      if (kind) params.set('meal', kind)
-      if (budget > 0) params.set('budget', budget)
-      const res = await fetch(`${API}/api/fortunes?${params}`)
-      if (!res.ok) throw new Error('Chưa xin được quẻ. Thử lại nhé!')
-      const data = await res.json()
-      const winner = data.dish
+      const allTosses = []
+      const allLines = []
+
+      for (let i = 0; i < 6; i++) {
+        const result = new Promise(resolve => {
+          const r = castSingleToss()
+          setCurrentToss(r)
+          timerRef.current = setTimeout(() => {
+            resolve(r)
+          }, COIN_INTERVAL + LINE_DRAW_MS)
+        })
+        const toss = await result
+        allTosses.push(toss)
+        allLines.push(toss.yang ? 1 : 0)
+        setTosses([...allTosses])
+        setLines([...allLines])
+        setTossIndex(i)
+        setCurrentToss(null)
+        await new Promise(r => setTimeout(r, 100))
+      }
+
+      const hexResult = resolveHexagram(allLines)
+      setHex(hexResult)
 
       let fpool = pool
-      if (kind) fpool = fpool.filter((d) => d.meal_type === kind)
-      if (budget > 0) fpool = fpool.filter((d) => d.avg_price > 0 && d.avg_price <= budget)
-      if (!fpool.length) fpool = [winner]
+      if (kind) fpool = fpool.filter(d => d.meal_type === kind)
+      if (budget > 0) fpool = fpool.filter(d => d.avg_price > 0 && d.avg_price <= budget)
+      if (!fpool.length) fpool = pool
+      const chosen = fpool[Math.floor(Math.random() * fpool.length)]
+      setDish(chosen)
 
-      const raw = [winner, ...shuffle(fpool.filter((d) => d.id !== winner.id))]
-      const startOff = Math.floor(Math.random() * raw.length)
-      const cards = []
-      for (let i = 0; i < REEL_LEN; i++) {
-        if (i === WINNER_INDEX) cards.push(winner)
-        else cards.push(raw[(startOff + i) % raw.length])
-      }
-      setReel(cards)
-
-      const winW = winRef.current ? winRef.current.clientWidth : 640
-      const trackW = cards.length * STEP - GAP
-      let finalX = WINNER_INDEX * STEP + CARD_W / 2 - winW / 2
-      finalX = Math.max(0, Math.min(finalX, trackW - winW))
-      const startX = Math.floor(Math.random() * Math.min(180, finalX))
-
-      setTransition('none')
-      setTranslate(startX)
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
-      setTransition('transform 2500ms cubic-bezier(.09,.72,.08,1) 80ms')
-      setTranslate(finalX)
-
-      timerRef.current = setTimeout(() => {
-        setPhase('idle')
-        setResult({ winner, fortune: data.fortune, luck: data.luck })
-      }, SPIN_MS)
+      setPhase('done')
     } catch (e) {
       setPhase('idle')
       setError(e.message)
     }
-  }
-
-  const kindLabel = KINDS.find((k) => k.id === kind)
-  const budgetLabel = BUDGETS.find((b) => b.value === budget)
+  }, [phase, pool, kind, budget, reset])
 
   return (
     <div className="quatrua">
       <div className="quatrua-head">
-        <h2 className="quatrua-title"><span className="loot-icon">🔮</span> Gieo quẻ</h2>
-        <p className="quatrua-sub">Gieo một quẻ xem ăn gì cho &quot;hợp duyên&quot;! Ấn nút để gieo quẻ nhé.</p>
+        <h2 className="quatrua-title"><span className="loot-icon">☯️</span> Gieo Quẻ Kinh Dịch</h2>
+        <p className="quatrua-sub">Gieo 3 đồng xu 6 lần · Lấy hào trên dưới · Xem quẻ 64 hexagram</p>
       </div>
 
-      <div className="reel-window" ref={winRef}>
-        <div
-          className="reel-track"
-          style={{ transform: `translateX(-${translate}px)`, transition }}
-        >
-          {reel.map((d, i) => {
-            const color = RARITY_COLOR[d.rarity.key] || RARITY_COLOR.common
-            return (
-              <article
-                className={`reel-card ${i === WINNER_INDEX ? 'reel-card-land' : ''}`}
-                key={`${d.id}-${i}`}
-                style={{ '--rc': color }}
-              >
-                <span className="reel-card-tier">{RARITY_TIER[d.rarity.key] || 'THƯỜNG'}</span>
-                <img
-                  src={d.image_url || '/images/fallback.svg'}
-                  alt={d.name}
-                  loading="lazy"
-                  onError={(e) => { e.target.src = '/images/fallback.svg' }}
-                />
-                <strong className="reel-card-name">{d.name}</strong>
-                <span className="reel-card-sub">{d.avg_price > 0 ? `${d.avg_price.toLocaleString('vi-VN')}đ` : 'Giá: chưa rõ'}</span>
-              </article>
-            )
-          })}
+      <div className="qd-board">
+        <div className="qd-coins-row">
+          <Coin face={currentToss?.coins?.[0] ? 'duong' : 'yin'} animating={!!currentToss} />
+          <Coin face={currentToss?.coins?.[1] ? 'duong' : 'yin'} animating={!!currentToss} />
+          <Coin face={currentToss?.coins?.[2] ? 'duong' : 'yin'} animating={!!currentToss} />
         </div>
-        <div className="reel-fade reel-fade-left" />
-        <div className="reel-fade reel-fade-right" />
-        <div className="reel-selector" />
+
+        {currentToss && (
+          <div className="qd-toss-info">
+            Lần {tossIndex + 2}/6 · Tổng: <b>{currentToss.sum}</b> · {currentToss.label}
+          </div>
+        )}
+
+        <div className="qd-hexagram">
+          {[0,1,2,3,4,5].map(i => (
+            <HexLine
+              key={i}
+              yang={lines[i] === 1}
+              moving={tosses[i]?.moving}
+              index={i}
+              revealed={i < lines.length}
+            />
+          ))}
+        </div>
+
+        {tossIndex >= 0 && !currentToss && phase === 'tossing' && (
+          <div className="qd-toss-hint">Đang gieo lần {tossIndex + 2}/6...</div>
+        )}
       </div>
 
       <div className="reel-options">
         <div className="reel-option-row">
           <span className="reel-opt-label">Bữa</span>
           <div className="reel-chips">
-            {KINDS.map((k) => (
-              <button
-                key={k.id || 'any'}
-                type="button"
-                className={`reel-chip ${kind === k.id ? 'active' : ''}`}
-                onClick={() => setKind(k.id)}
-              >
+            {KINDS.map(k => (
+              <button key={k.id || 'any'} type="button" className={`reel-chip ${kind === k.id ? 'active' : ''}`} onClick={() => setKind(k.id)}>
                 <span className="reel-chip-emoji">{k.emoji}</span> {k.label}
               </button>
             ))}
@@ -190,13 +192,8 @@ export default function QuaTrua() {
         <div className="reel-option-row">
           <span className="reel-opt-label">Ngân sách</span>
           <div className="reel-chips">
-            {BUDGETS.map((b) => (
-              <button
-                key={b.value}
-                type="button"
-                className={`reel-chip ${budget === b.value ? 'active' : ''}`}
-                onClick={() => setBudget(b.value)}
-              >
+            {BUDGETS.map(b => (
+              <button key={b.value} type="button" className={`reel-chip ${budget === b.value ? 'active' : ''}`} onClick={() => setBudget(b.value)}>
                 <span className="reel-chip-emoji">{b.emoji}</span> {b.label}
               </button>
             ))}
@@ -204,53 +201,77 @@ export default function QuaTrua() {
         </div>
       </div>
 
-      <button className="reel-spin" onClick={spin} disabled={phase === 'spinning'} type="button">
-        {phase === 'spinning' ? 'Đang quay...' : '🎰 GIEO QUẺ'}
+      <button className="reel-spin" onClick={startCast} disabled={phase === 'tossing' || phase === 'revealing'} type="button">
+        {phase === 'tossing' ? 'Đang gieo...' : phase === 'done' ? 'GIEO LẠI ☯️' : '☯️ GIEO QUẺ'}
       </button>
 
       {error && <div className="lootbox-error">{error}</div>}
 
-      {result && phase === 'idle' && (
-        <div className={`quatrua-result rarity-card-${result.winner.rarity.key}`}>
-          <p className="quatrua-fortune">"{result.fortune}"</p>
-          <div className="lootbox-result-main">
-            <img
-              src={result.winner.image_url || '/images/fallback.svg'}
-              alt={result.winner.name}
-              className="lootbox-result-img"
-              onError={(e) => { e.target.src = '/images/fallback.svg' }}
-            />
-            <div className="lootbox-result-info">
-              <div className="lootbox-result-top" style={{ marginBottom: 6 }}>
-                <span className="lootbox-result-label">QUẺ CỦA BẠN</span>
-                <RarityBadge rarity={result.winner.rarity} />
+      {hex && phase === 'done' && (
+        <div className="qd-result">
+          <div className="qd-result-hex">
+            <div className="qd-hexagram qd-hexagram-static">
+              {[0,1,2,3,4,5].map(i => (
+                <HexLine key={i} yang={lines[i] === 1} moving={tosses[i]?.moving} index={i} revealed />
+              ))}
+            </div>
+            <div className="qd-result-info">
+              <span className="qd-result-num">Quẻ {hex.n}</span>
+              <span className="qd-result-name">{hex.ten}</span>
+              <span className="qd-result-han">{hex.han}</span>
+              <div className="qd-result-trigram">
+                <span>{TRI_EMOJI[hex.lower] || '?'} Hạ: {hex.lower}</span>
+                <span>{TRI_EMOJI[hex.upper] || '?'} Thượng: {hex.upper}</span>
               </div>
-              <div className="lootbox-result-name">{result.winner.name}</div>
-              <div className="lootbox-result-meta">
-                <span className="dish-card-rating">&#9733; {result.winner.avg_rating.toFixed(1)}/10</span>
-                <span className="dish-card-price">
-                  {result.winner.avg_price > 0 ? `${result.winner.avg_price.toLocaleString('vi-VN')}đ` : 'Giá: chưa rõ'}
-                </span>
-              </div>
-              <Link to={`/dish/${result.winner.slug}`} className="lootbox-result-link">
-                Xem chi tiết &#8594;
-              </Link>
+              <p className="qd-result-y">{hex.y}</p>
             </div>
           </div>
-          <p className="quatrua-mascot">
-            {mascot
-              ? `${mascot.emoji} Gợi ý vui từ linh vật ${mascot.name}: để cơ duyên dẫn đường, đừng nghĩ quá nhiều bạn nhé!`
-              : '🔮 Cơ duyên đã chỉ đường, ăn thôi!'}
-          </p>
-        </div>
-      )}
 
-      {phase === 'spinning' && (
-        <div className="reel-spinning-hint">
-          {(kindLabel ? `${kindLabel.emoji} ${kindLabel.label}` : '🎲 Bất kỳ')}
-          {budgetLabel && budget > 0 ? ` · ${budgetLabel.label}` : ''}
+          {dish && (
+            <div className={`qd-dish rarity-card-${dish.rarity.key}`}>
+              <div className="qd-dish-head">
+                <span className="lootbox-result-label">GỢI Ý MÓN ĂN</span>
+                <RarityBadge rarity={dish.rarity} />
+              </div>
+              <div className="lootbox-result-main">
+                <img
+                  src={dish.image_url || '/images/fallback.svg'}
+                  alt={dish.name}
+                  className="lootbox-result-img"
+                  onError={e => { e.target.src = '/images/fallback.svg' }}
+                />
+                <div className="lootbox-result-info">
+                  <div className="lootbox-result-name">{dish.name}</div>
+                  <div className="lootbox-result-meta">
+                    <span className="dish-card-rating">★ {dish.avg_rating.toFixed(1)}/10</span>
+                    <span className="dish-card-price">{dish.avg_price > 0 ? `${dish.avg_price.toLocaleString('vi-VN')}đ` : 'Giá: chưa rõ'}</span>
+                  </div>
+                  <p className="lootbox-result-desc">{dish.description}</p>
+                  <Link to={`/dish/${dish.slug}`} className="lootbox-result-link">Xem chi tiết + quán + công thức →</Link>
+                </div>
+              </div>
+              <p className="quatrua-mascot">
+                {mascot
+                  ? `${mascot.emoji} Gợi ý vui từ linh vật ${mascot.name}: ${hex.food}`
+                  : `☯️ ${hex.food}`}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
   )
 }
+
+function castSingleToss() {
+  const coins = [0,0,0].map(() => Math.random() < 0.5 ? 0 : 1)
+  const sum = coins.reduce((a, b) => a + b + 2, 0)
+  return {
+    coins,
+    sum,
+    yang: sum % 2 === 1,
+    moving: sum === 6 || sum === 9,
+    label: sum === 6 ? 'Lão Âm' : sum === 7 ? 'Thiếu Dương' : sum === 8 ? 'Thiếu Âm' : 'Lão Dương',
+  }
+}
+

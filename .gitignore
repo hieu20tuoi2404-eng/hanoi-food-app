@@ -10,6 +10,7 @@ frontend/dist/
 
 # Data
 data/
+!frontend/src/data/
 *.db
 *.db-wal
 *.db-shm

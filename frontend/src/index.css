@@ -2300,320 +2300,6 @@ body {
   }
 }
 
-/* ===== Két Kho Báu – reel slot game ===== */
-.kho-bau {
-  margin: 1.5rem auto;
-  max-width: 960px;
-}
-.kho-bau-head {
-  text-align: center;
-  margin-bottom: 1rem;
-}
-.kho-bau-tag {
-  display: inline-block;
-  font-size: 0.65rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #d6c28a;
-  background: linear-gradient(90deg, rgba(214,194,138,0.12) 0%, rgba(214,194,138,0.22) 50%, rgba(214,194,138,0.12) 100%);
-  border: 1px solid rgba(214,194,138,0.28);
-  padding: 4px 16px;
-  border-radius: 20px;
-  margin-bottom: 8px;
-}
-.kho-bau-title {
-  font-size: 1.45rem;
-  font-weight: 800;
-  color: var(--text);
-  margin: 6px 0 4px;
-}
-.kho-bau-sub {
-  font-size: 0.88rem;
-  color: var(--text-muted);
-}
-
-/* Window */
-.kho-bau-window {
-  position: relative;
-  width: 100%;
-  min-height: 238px;
-  overflow: hidden;
-  border-radius: 16px;
-  border: 2px solid var(--border);
-  background: var(--card-bg);
-}
-.kho-bau-track {
-  display: flex;
-  gap: 14px;
-  padding: 20px 0;
-}
-
-/* Cards */
-.kho-bau-card {
-  position: relative;
-  flex: 0 0 176px;
-  display: flex;
-  flex-direction: column;
-  border-radius: 14px;
-  overflow: hidden;
-  background: var(--card-bg);
-  border: 2px solid var(--border);
-  scroll-snap-align: center;
-}
-.kho-bau-card img {
-  width: 100%;
-  height: 108px;
-  object-fit: cover;
-  display: block;
-  border-radius: 14px 14px 0 0;
-  transition: filter 0.35s ease, transform 0.35s ease;
-}
-.kho-bau-spinning .kho-bau-card img {
-  filter: blur(6px) saturate(0.78) brightness(0.92);
-  transform: scale(1.05);
-}
-.kho-bau-name,
-.kho-bau-sub2 {
-  padding: 0 10px;
-}
-.kho-bau-name {
-  font-size: 0.82rem;
-  line-height: 1.28;
-  margin: 6px 0 2px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.kho-bau-sub2 {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-
-/* Tier badge */
-.kho-bau-tier {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: #fff;
-  background: var(--card-bg);
-  padding: 2px 7px;
-  border-radius: 12px;
-  line-height: 1.4;
-}
-
-/* Landed card glow */
-.kho-bau-card-land {
-  border-color: var(--rc, var(--accent));
-  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--rc, var(--accent)) 50%, transparent);
-  animation: kho-bau-glow 1.1s ease-in-out infinite alternate;
-}
-@keyframes kho-bau-glow {
-  0%   { box-shadow: 0 0 8px 1px color-mix(in srgb, var(--rc, var(--accent)) 42%, transparent); }
-  100% { box-shadow: 0 0 22px 3px color-mix(in srgb, var(--rc, var(--accent)) 65%, transparent); }
-}
-
-/* Selector line */
-.kho-bau-selector {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 3px;
-  transform: translateX(-50%);
-  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.85) 20%, rgba(255,255,255,0.85) 80%, rgba(255,255,255,0) 100%);
-  z-index: 5;
-  pointer-events: none;
-}
-.kho-bau-selector::before,
-.kho-bau-selector::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.9);
-  box-shadow: 0 0 6px rgba(255,255,255,0.5);
-}
-.kho-bau-selector::before { top: -6px; }
-.kho-bau-selector::after  { bottom: -6px; }
-
-/* Scanline */
-.kho-bau-scanline {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 4;
-  background: linear-gradient(180deg,
-    rgba(255,255,255,0) 0%,
-    rgba(255,255,255,0) 44%,
-    rgba(255,255,255,0.16) 47%,
-    rgba(255,255,255,0.28) 50%,
-    rgba(255,255,255,0.16) 53%,
-    rgba(255,255,255,0) 56%,
-    rgba(255,255,255,0) 100%
-  );
-  background-size: 100% 260%;
-  animation: kho-bau-scan 0.75s linear infinite;
-}
-@keyframes kho-bau-scan {
-  0%   { background-position: 0 -60%; }
-  100% { background-position: 0 160%; }
-}
-
-/* Fade edges */
-.kho-bau-fade-left,
-.kho-bau-fade-right {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 80px;
-  pointer-events: none;
-  z-index: 3;
-}
-.kho-bau-fade-left {
-  left: 0;
-  background: linear-gradient(90deg, var(--card-bg) 0%, transparent 100%);
-}
-.kho-bau-fade-right {
-  right: 0;
-  background: linear-gradient(270deg, var(--card-bg) 0%, transparent 100%);
-}
-
-/* Controls */
-.kho-bau-controls {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: center;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
-.kho-bau-opt {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.kho-bau-opt label {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-}
-.kho-bau-opt select {
-  padding: 7px 10px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--card-bg);
-  color: var(--text);
-  font-size: 0.82rem;
-}
-.kho-bau-btn {
-  padding: 9px 26px;
-  border-radius: 10px;
-  border: none;
-  background: var(--accent);
-  color: var(--accent-contrast, #fff);
-  font-size: 0.88rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.kho-bau-btn:hover { filter: brightness(1.08); }
-.kho-bau-btn-reset {
-  background: var(--text-muted);
-}
-.kho-bau-status {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  padding: 9px 0;
-  text-align: center;
-}
-.kho-bau-error {
-  text-align: center;
-  color: #dc2626;
-  font-size: 0.82rem;
-  margin-top: 0.6rem;
-}
-
-/* Result */
-.kho-bau-result {
-  margin-top: 1rem;
-  border-radius: 16px;
-  border: 2px solid var(--border);
-  background: var(--card-bg);
-  overflow: hidden;
-}
-.kho-bau-result-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px 0;
-}
-.kho-bau-result-label {
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
-}
-.kho-bau-result-main {
-  display: flex;
-  gap: 16px;
-  padding: 10px 16px 16px;
-}
-.kho-bau-result-img {
-  width: 160px;
-  height: 108px;
-  object-fit: cover;
-  border-radius: 12px;
-  flex-shrink: 0;
-}
-.kho-bau-result-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-}
-.kho-bau-result-name {
-  font-size: 1.05rem;
-  font-weight: 800;
-}
-.kho-bau-result-meta {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  display: flex;
-  gap: 12px;
-}
-.kho-bau-result-desc {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  margin: 2px 0 0;
-}
-.kho-bau-result-link {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--accent);
-  text-decoration: none;
-}
-.kho-bau-result-link:hover { text-decoration: underline; }
-
-/* Rarity borders for Kho Báu result (scoped) */
-.kho-bau-result.rarity-card-common   { border-color: #9d998d; }
-.kho-bau-result.rarity-card-rare     { border-color: #71a69a; }
-.kho-bau-result.rarity-card-epic     { border-color: #aa8cbb; }
-.kho-bau-result.rarity-card-legendary{ border-color: #e4c879; box-shadow: 0 0 14px 2px color-mix(in srgb, #e4c879 35%, transparent); }
-
-@media (max-width: 640px) {
-  .kho-bau-card { flex: 0 0 148px; }
-  .kho-bau-window { min-height: 216px; }
-  .kho-bau-result-main { flex-direction: column; align-items: center; }
-  .kho-bau-result-img { width: 100%; height: auto; }
-}
 
 /* ===== Hội Mèo – animal pick game ===== */
 .hoi-meo {
@@ -2819,4 +2505,241 @@ body {
   .hoi-meo-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
   .hoi-meo-result-main { flex-direction: column; align-items: center; }
   .hoi-meo-result-img { width: 100%; height: auto; }
+}
+
+/* ===== Gieo Quẻ Kinh Dịch – coin toss + hexagram ===== */
+.qd-board {
+  background: radial-gradient(180% 120% at 50% 0%, rgba(200,160,80,0.12), transparent 60%),
+              var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 12px 14px;
+  text-align: center;
+  min-height: 150px;
+  margin-top: 14px;
+}
+
+/* 3 coins row */
+.qd-coins-row {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 8px;
+  min-height: 64px;
+}
+
+.qd-coin {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  border: 2px solid #bfa46a;
+  background: linear-gradient(145deg, #f5e4b3, #d9c279);
+  color: #4a3800;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.5), 0 2px 6px rgba(0,0,0,0.15);
+  transition: transform 0.18s;
+}
+.qd-coin-anim {
+  animation: qd-shake 0.28s ease-in-out infinite alternate;
+}
+.qd-coin-yang {
+  border-color: #a88010;
+  background: linear-gradient(145deg, #f8e898, #d4a830);
+}
+.qd-coin-yin {
+  border-color: #7a6850;
+  background: linear-gradient(145deg, #e8dcc0, #b8a888);
+}
+.qd-coin-face {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+.qd-coin-label {
+  font-size: 0.42rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin-top: 1px;
+}
+@keyframes qd-shake {
+  0%   { transform: rotate(-14deg) translateY(-3px); }
+  50%  { transform: rotate(10deg) translateY(1px); }
+  100% { transform: rotate(-8deg) translateY(-1px); }
+}
+
+.qd-toss-info {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+/* Hexagram lines container */
+.qd-hexagram {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 6px;
+  margin: 10px auto 6px;
+  max-width: 180px;
+}
+.qd-hexagram-static {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 6px;
+  align-items: center;
+  margin: 0;
+  max-width: none;
+}
+
+.qd-line {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 8px;
+  animation: qd-line-in 0.3s ease-out both;
+}
+.qd-line-hidden {
+  background: var(--border);
+  border-radius: 2px;
+  width: 140px;
+  opacity: 0.35;
+}
+.qd-line-num {
+  position: absolute;
+  right: -28px;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+/* Yang = solid line */
+.qd-line-solid {
+  width: 140px;
+  height: 8px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #3a2a00, #7a5a10, #3a2a00);
+  box-shadow: 0 0 8px rgba(180,140,50,0.35);
+}
+/* Yin = broken line */
+.qd-line-broken {
+  width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.qd-line-broken::before,
+.qd-line-broken::after {
+  content: '';
+  width: 55%;
+  height: 8px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #3a2a00, #7a5a10, #3a2a00);
+  box-shadow: 0 0 6px rgba(180,140,50,0.3);
+}
+.qd-line-broken::before { width: 42%; margin-right: auto; }
+.qd-line-broken::after  { width: 42%; margin-left: auto; }
+.qd-gap { display: none; }
+
+.qd-line-moving {
+  animation: qd-line-in 0.3s ease-out both, qd-glow 1.1s ease-in-out infinite alternate;
+}
+.qd-line-moving .qd-dot,
+.qd-dot {
+  position: absolute;
+  left: -14px;
+  color: #b88010;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+@keyframes qd-line-in {
+  from { opacity: 0; transform: scaleX(0.3); }
+  to   { opacity: 1; transform: scaleX(1); }
+}
+@keyframes qd-glow {
+  0%   { filter: brightness(1); }
+  100% { filter: brightness(1.35); }
+}
+
+.qd-toss-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* Final result panel */
+.qd-result {
+  margin-top: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  padding: 16px;
+  animation: fadeInUp 0.35s ease-out;
+}
+.qd-result-hex {
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.qd-result-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+.qd-result-num {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+.qd-result-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.qd-result-han {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.qd-result-trigram {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: 14px;
+}
+.qd-result-y {
+  font-size: 0.88rem;
+  font-style: italic;
+  color: var(--text);
+  margin: 4px 0 0;
+  line-height: 1.45;
+}
+
+/* Dish suggestion card inside result */
+.qd-dish {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  background: var(--card-bg);
+}
+.qd-dish-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 640px) {
+  .qd-line-hidden,
+  .qd-line-solid { width: 110px; }
+  .qd-line-broken { width: 110px; }
+  .qd-result-hex { flex-direction: column; align-items: center; }
+  .qd-coin { width: 44px; height: 44px; font-size: 0.95rem; }
 }
