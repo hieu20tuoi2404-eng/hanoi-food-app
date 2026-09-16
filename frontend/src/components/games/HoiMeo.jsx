@@ -84,6 +84,20 @@ export default function HoiMeo() {
     return () => { cancelled = true }
   }, [])
 
+  // Random dish cycling while idle: badges keep getting new random foods
+  // while still following the cats (trang truanayangi: badges "rolling" qua các món)
+  useEffect(() => {
+    if (phase !== 'idle') return
+    const load = async () => {
+      try {
+        const results = await Promise.all(CAT_PATHS.map(() => fetchRandomDish()))
+        if (mountedRef.current && phaseRef.current === 'idle') setBadges(results)
+      } catch {}
+    }
+    const id = window.setInterval(load, 4000)
+    return () => clearInterval(id)
+  }, [phase])
+
   // Time-synced follower: badges follow real-site cat paths with the video playhead
   useEffect(() => {
     if (reducedMotion) return
@@ -98,7 +112,7 @@ export default function HoiMeo() {
           const el = badgeRefs.current[k]
           if (!el) continue
           const p = CAT_PATHS[k][fr]
-          el.style.transform = `translate(-50%, -100%) translate(${p[0] * 100}%, ${p[1] * 100}%)`
+          el.style.transform = `translate(-50%, -85%) translate(${p[0] * 100}%, ${p[1] * 100}%)`
           if (phaseRef.current === 'idle') {
             if (p[2]) el.classList.add('obscured')
             else el.classList.remove('obscured')
@@ -213,7 +227,7 @@ export default function HoiMeo() {
                 {isLocked && (<><div className="cat-lock-ring" /><div className="cat-lock-sparks" /></>)}
                 <div className="cat-badge-content">
                   {dish ? (
-                    <img src={dish.image_url || '/images/fallback.svg'} alt={dish.name} className="food-image" onError={e => { e.target.src = '/images/fallback.svg' }} />
+                    <img key={dish.id} src={dish.image_url || '/images/fallback.svg'} alt={dish.name} className="food-image" onError={e => { e.target.src = '/images/fallback.svg' }} />
                   ) : (
                     <span className="cat-question">?</span>
                   )}
