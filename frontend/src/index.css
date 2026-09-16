@@ -2616,10 +2616,17 @@ body {
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   z-index: 10;
-  transition: transform 0.12s ease-out, opacity 0.18s ease-out;
+  transition: transform 0.12s ease-out, opacity 0.18s ease-out, filter 0.12s;
+  cursor: pointer;
+  animation: cat-float 3s ease-in-out infinite;
 }
-.cat-badge.locked { transform: translate(-50%, -50%) scale(1.15); }
-.cat-badge.not-selected { opacity: 0.45; pointer-events: none; }
+.cat-badge:nth-child(2) { animation-delay: -0.6s; animation-duration: 3.4s; }
+.cat-badge:nth-child(3) { animation-delay: -1.2s; animation-duration: 2.8s; }
+.cat-badge:nth-child(4) { animation-delay: -0.3s; animation-duration: 3.2s; }
+.cat-badge:nth-child(5) { animation-delay: -1.8s; animation-duration: 3.6s; }
+.cat-badge:hover { transform: translate(-50%, -50%) scale(1.12); filter: brightness(1.15); }
+.cat-badge.locked { transform: translate(-50%, -50%) scale(1.15); animation: cat-lock 0.24s cubic-bezier(0.16,1,0.3,1); }
+.cat-badge.not-selected { opacity: 0.4; pointer-events: none; filter: grayscale(0.5); }
 .cat-badge-content {
   position: relative;
   width: 100%;
@@ -2627,12 +2634,16 @@ body {
   background: #f3f0e7;
   border: 2px solid var(--cat-tier-color, #cbd7b7);
   border-radius: 50%;
-  box-shadow: 0 3px 12px #0009;
+  box-shadow: 0 3px 12px #0009, 0 0 0 0 var(--cat-tier-color);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  transition: box-shadow 0.12s, border-color 0.12s;
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.12s;
+}
+.cat-badge:hover .cat-badge-content {
+  box-shadow: 0 3px 16px #0009, 0 0 12px color-mix(in srgb, var(--cat-tier-color) 50%, transparent);
+  transform: scale(1.04);
 }
 .cat-badge.locked .cat-badge-content {
   border-color: var(--cat-tier-color);
@@ -2947,6 +2958,10 @@ body {
 .cat-reduced-btn span { font-size: 28px; }
 
 /* ===== Keyframes ===== */
+@keyframes cat-float {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-6px); }
+}
 @keyframes cat-lock {
   0% { transform: scale(0.9); }
   30% { transform: scale(1.16); box-shadow: 0 0 20px var(--cat-tier-color); }
