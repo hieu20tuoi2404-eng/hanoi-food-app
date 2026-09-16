@@ -2613,17 +2613,19 @@ body {
   animation: cat-video-out 0.18s ease-out both;
 }
 
-/* Badges on video — left/top driven by JS follower (% of video-wrap) */
+/* Badges on video — left/top driven by JS follower (% of video-wrap).
+   Reference site: badge ≈ 4.1% of wrap, transform translate(-50%, -100%)
+   (badge bottom-center anchored exactly on the cat's head point). */
 .cat-badge {
   position: absolute;
   left: 0;
   top: 0;
-  width: 9%;
+  width: 4.1%;
   aspect-ratio: 1;
   z-index: 10;
   pointer-events: none;
   will-change: transform;
-  transform: translate(-50%, -58%);
+  transform: translate(-50%, -100%);
   transition: opacity 0.18s ease-out;
 }
 .cat-badge.obscured { opacity: 0; }
@@ -2660,18 +2662,21 @@ body {
   animation: cat-lock 0.24s cubic-bezier(0.16,1,0.3,1);
 }
 .cat-question {
-  font-size: 1.8vw;
+  font-size: 0.95vw;
   font-weight: 900;
   color: #465044;
   line-height: 1;
 }
 .cat-badge-name {
   position: absolute;
-  bottom: calc(100% + 6px);
+  bottom: calc(100% + 4px);
   left: 50%;
   transform: translateX(-50%);
-  white-space: nowrap;
+  white-space: normal;
+  text-align: center;
+  max-width: 220px;
   font-size: 10px;
+  line-height: 1.35;
   font-weight: 700;
   background: #222a24ed;
   color: #f3f0e7;
@@ -2750,13 +2755,13 @@ body {
   padding: 4px 14px 6px;
 }
 /* Kick → badges roll like a reel (video plays naturally = cats move) */
-.cat-stage.spinning .cat-badge-content {
+.cat-stage.rolling .cat-badge-content {
   animation: cat-spin-roll 0.5s linear infinite;
 }
 /* Respect reduced-motion: keep everything visible, just stop decorative motion */
 @media (prefers-reduced-motion: reduce) {
   .cat-badge-content,
-  .cat-stage.spinning .cat-badge-content {
+  .cat-stage.rolling .cat-badge-content {
     animation: none !important;
   }
 }
@@ -2867,6 +2872,7 @@ body {
   background: linear-gradient(120deg, #fff8e8, #f3e6d5);
   color: #322b36;
   text-align: center;
+  text-decoration: none;
   cursor: pointer;
   box-shadow: 0 3px 0 #151c1733, 0 6px 16px #08030e22;
   transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, border-color 0.12s ease-out, opacity 0.18s ease-out;

@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import RarityBadge from '../cards/RarityBadge'
 import { CAT_PATHS, PATH_FPS, PATH_NFRAMES } from './catPaths'
+
+const CAT_NAMES = ['Mèo kem', 'Mặt tròn', 'Đốm đen']
+const LOCK_AT = [4000, 7000, 10000]
 
 const API = import.meta.env.VITE_API_BASE || ''
 
@@ -21,13 +23,12 @@ const fetchRandomDish = async () => {
   return res.json()
 }
 
-const delay = (ms) => new Promise(r => setTimeout(r, ms))
+const delay = (ms) => new Promise(r => setTimeout(r, ms)) // eslint-disable-line no-unused-vars
 
 export default function HoiMeo() {
   const [badges, setBadges] = useState(Array.from({ length: CAT_PATHS.length }, () => null))
-  const [phase, setPhase] = useState('idle') // idle | spinning | revealed
-  const [winnerIdx, setWinnerIdx] = useState(null)
-  const [winnerDish, setWinnerDish] = useState(null)
+  const [phase, setPhase] = useState('idle') // idle | rolling | revealed
+  const [locked, setLocked] = useState(Array.from({ length: CAT_PATHS.length }, () => false))
   const [error, setError] = useState('')
   const [muted, setMuted] = useState(true)
   const videoRef = useRef(null)
@@ -35,6 +36,8 @@ export default function HoiMeo() {
   const audioRef = useRef({})
   const audioCtxRef = useRef(null)
   const mountedRef = useRef(true)
+  const lockedRef = useRef(Array.from({ length: CAT_PATHS.length }, () => false))
+  const timersRef = useRef([])
   const phaseRef = useRef(phase)
   phaseRef.current = phase
 
@@ -70,18 +73,13 @@ export default function HoiMeo() {
     if (a) { a.currentTime = 0; a.volume = vol; a.play().catch(() => {}) }
   }, [muted])
 
-  // Fast reel roll while spinning: food images swap every 350ms
-  useEffect(() => {
-    if (phase !== 'spinning') return
-    const roll = async () => {
-      try {
-        const results = await Promise.all(CAT_PATHS.map(() => fetchRandomDish()))
-        if (mountedRef.current && phaseRef.current === 'spinning') setBadges(results)
-      } catch {}
-    }
-    const id = window.setInterval(roll, 350)
-    return () => clearInterval(id)
-  }, [phase])
+  // Clear any pending roll timers
+  const clearTimers = useCallback(() => {
+    timersRef.current.forEach(t => { clearTimeout(t); clearInterval(t) })
+    timersRef.current = []
+  }, [])
+
+  useEffect(() => () => clearTimers(), [clearTimers])
 
   // Time-synced follower: badges follow real-site cat paths with the video playhead
   useEffect(() => {
@@ -130,74 +128,89 @@ export default function HoiMeo() {
   const kick = useCallback(async () => {
     if (phase !== 'idle') return
     unlockAudio()
-    setPhase('spinning')
-    setWinnerIdx(null)
-    setWinnerDish(null)
+    clearTimers()
     setError('')
+    setPhase('rolling')
+    lockedRef.current = Array.from({ length: CAT_PATHS.length }, () => false)
+    setLocked(Array.from({ length: CAT_PATHS.length }, () => false))
     play('open', 0.7)
 
-    // Start video (cats run) + load 3 random dishes into badges immediately
+    // Video starts running only now (cats jump)
     const v = videoRef.current
     if (v) {
       v.currentTime = 0
       v.play().catch(() => {})
     }
-    try {
-      const init = await Promise.all(CAT_PATHS.map(() => fetchRandomDish()))
-      if (mountedRef.current) setBadges(init)
-    } catch {}
 
+    // Pool of random dishes to cycle through (no per-tick network hits)
+    let pool = []
     try {
-      const winner = await fetchRandomDish()
-      await delay(3600)
+      pool = await Promise.all(Array.from({ length: 15 }, () => fetchRandomDish()))
+    } catch {}
+    pool = pool.filter(Boolean)
+    if (!mountedRef.current) return
+    if (!pool.length) {
+      setError('Không lấy được món — kiểm tra kết nối')
+      setPhase('idle')
+      return
+    }
+    const pick = () => pool[Math.floor(Math.random() * pool.length)]
+    setBadges(Array.from({ length: CAT_PATHS.length }, () => pick()))
+
+    // All badges keep rolling until each one locks
+    const rollId = window.setInterval(() => {
       if (!mountedRef.current) return
-      play('tick', 0.3)
-      const idx = Math.floor(Math.random() * CAT_PATHS.length)
-      setWinnerIdx(idx)
-      setWinnerDish(winner)
-      setBadges(prev => {
-        const next = [...prev]
-        next[idx] = winner
-        return next
-      })
-      await delay(350)
+      setBadges(prev => prev.map((d, i) => (lockedRef.current[i] ? d : pick())))
+    }, 280)
+    timersRef.current.push(rollId)
+
+    // Staggered locks, like the reference: ~4s, ~7s, ~10s
+    LOCK_AT.forEach((ms, i) => {
+      const id = window.setTimeout(() => {
+        if (!mountedRef.current) return
+        lockedRef.current[i] = true
+        setLocked(prev => { const n = [...prev]; n[i] = true; return n })
+        setBadges(prev => { const n = [...prev]; n[i] = pick() || n[i]; return n })
+        play('tick', 0.3)
+      }, ms)
+      timersRef.current.push(id)
+    })
+
+    const doneId = window.setTimeout(() => {
       if (!mountedRef.current) return
+      clearInterval(rollId)
       play('reveal', 0.8)
       setPhase('revealed')
-    } catch (e) {
-      if (!mountedRef.current) return
-      setError(e.message || 'Không lấy được món')
-      setPhase('idle')
-    }
-  }, [phase, unlockAudio, play])
+    }, LOCK_AT[LOCK_AT.length - 1] + 400)
+    timersRef.current.push(doneId)
+  }, [phase, unlockAudio, play, clearTimers])
 
-  const reset = useCallback(async () => {
+  const reset = useCallback(() => {
+    clearTimers()
+    const v = videoRef.current
+    if (v) { try { v.pause(); v.currentTime = 0 } catch {} }
+    lockedRef.current = Array.from({ length: CAT_PATHS.length }, () => false)
+    setLocked(Array.from({ length: CAT_PATHS.length }, () => false))
+    setBadges(Array.from({ length: CAT_PATHS.length }, () => null))
     setPhase('idle')
-    setWinnerIdx(null)
-    setWinnerDish(null)
     setError('')
-    try {
-      const results = await Promise.all(CAT_PATHS.map(() => fetchRandomDish()))
-      if (mountedRef.current) setBadges(results)
-    } catch {}
-  }, [])
+  }, [clearTimers])
 
   return (
-    <div className={`cat-stage ${phase === 'spinning' ? 'spinning' : ''} ${phase === 'revealed' ? 'showing-results results-entering' : ''}`}>
+    <div className={`cat-stage ${phase === 'rolling' ? 'rolling' : ''} ${phase === 'revealed' ? 'showing-results results-entering' : ''}`}>
       <div className="cat-video-wrap">
         <video ref={videoRef} src={VIDEO_URL} loop muted={muted} playsInline preload="auto" poster="/images/fallback.svg" />
         {CAT_PATHS.map((_, i) => {
             const dish = badges[i]
-            const isLocked = phase === 'revealed' && winnerIdx === i
-            const obscured = phase !== 'idle' && !isLocked
-            const tierColor = isLocked && winnerDish?.rarity?.key
-              ? RARITY_COLORS[winnerDish.rarity.key] || winnerDish.rarity.color
-              : (dish?.rarity?.key ? RARITY_COLORS[dish.rarity.key] || dish.rarity.color : '#cbd7b7')
+            const isLocked = locked[i]
+            const tierColor = dish?.rarity?.key
+              ? RARITY_COLORS[dish.rarity.key] || dish.rarity.color
+              : '#cbd7b7'
             return (
               <div
                 key={i}
                 ref={el => { badgeRefs.current[i] = el }}
-                className={`cat-badge ${isLocked ? 'locked' : ''} ${obscured ? 'obscured' : ''} ${dish ? 'ready' : 'waiting'}`}
+                className={`cat-badge ${phase === 'rolling' ? 'rolling' : ''} ${isLocked ? 'locked' : ''} ${dish ? 'ready' : 'waiting'}`}
                 style={{ '--cat-tier-color': tierColor }}
               >
                 {isLocked && (<><div className="cat-lock-ring" /><div className="cat-lock-sparks" /></>)}
@@ -208,7 +221,11 @@ export default function HoiMeo() {
                     <span className="cat-question">?</span>
                   )}
                 </div>
-                {isLocked && dish && <span className="cat-badge-name">{dish.name}</span>}
+                <span className="cat-badge-name">
+                  {isLocked && dish
+                    ? `${dish.name}${dish.rarity?.name ? ' · ' + dish.rarity.name : ''}`
+                    : (dish && phase === 'rolling' ? dish.name : `🐱 ${CAT_NAMES[i]}`)}
+                </span>
               </div>
             )
           })}
@@ -220,50 +237,46 @@ export default function HoiMeo() {
 
       {phase !== 'revealed' && (
         <div className="cat-kick-wrap">
-          <button className="cat-kick" onClick={kick} disabled={phase !== 'idle'} type="button" aria-busy={phase === 'spinning'}>
-            {phase === 'spinning' ? 'ĐANG QUAY...' : 'KICK NGAY ↗'}
+          <button className="cat-kick" onClick={kick} disabled={phase !== 'idle'} type="button" aria-busy={phase === 'rolling'}>
+            {phase === 'rolling' ? 'ĐANG QUAY...' : 'NHỜ MÈO CHỌN MÓN ↗'}
           </button>
         </div>
       )}
 
       {error && <div className="cat-status cat-error">{error}</div>}
-      {phase === 'spinning' && <div className="cat-status">Đang chọn món...</div>}
-      {phase === 'idle' && <div className="cat-status">Bấm Kick để quay món trưa nay!</div>}
+      {phase === 'rolling' && <div className="cat-status">🎰 Mèo đang chọn món...</div>}
+      {phase === 'idle' && <div className="cat-status">Bấm để nhờ mèo chọn món trưa nay!</div>}
 
-      {phase === 'revealed' && winnerDish && (
+      {phase === 'revealed' && (
         <div className="cat-results">
           <div className="cat-results-heading">
-            <span>🐱 HỘI MÈO</span>
-            <h2>Con mèo này chốt cho bạn món!</h2>
-            <p>3 em mèo mỗi em chọn một món, em nào chốt trước là món trưa nay 🎉</p>
+            <span>📋 BIÊN BẢN HỌP TRƯA</span>
+            <h2>Mèo đề xuất. Bạn chốt.</h2>
+            <p>3 em mèo mỗi em đề cử một món — chọn 1 để ăn trưa 🐟</p>
           </div>
           <div className="cat-result-list">
             {badges.map((dish, i) => dish && (
-              <div
+              <Link
                 key={i}
-                className={`cat-result-card cat-card-enter ${i === winnerIdx ? 'is-selected' : 'not-selected'}`}
+                to={`/dish/${dish.slug}`}
+                className="cat-result-card cat-card-enter"
                 style={{ '--cat-tier-color': dish.rarity?.key ? RARITY_COLORS[dish.rarity.key] || dish.rarity.color : '#cbd7b7' }}
               >
                 <div className="cat-result-art">
                   <img src={dish.image_url || '/images/fallback.svg'} alt={dish.name} className="food-image" onError={e => { e.target.src = '/images/fallback.svg' }} />
                 </div>
                 <div className="cat-result-copy">
-                  <small>{dish.category || 'Món ngon'}</small>
+                  <small>{CAT_NAMES[i]} đề cử</small>
                   <strong>{dish.name}</strong>
                   <div className="cat-price">{dish.avg_price?.toLocaleString('vi-VN')}đ</div>
                   <div className="cat-tier-tag">{dish.rarity?.name || 'Món ngon'}</div>
                 </div>
-                <span className="cat-select-label">{i === winnerIdx ? 'chốt ✓' : '–'}</span>
-              </div>
+                <span className="cat-select-label">Chọn ↗</span>
+              </Link>
             ))}
           </div>
-          <div className="cat-result-detail">
-            <div className="cat-result-detail-head"><RarityBadge rarity={winnerDish.rarity} /></div>
-            <p className="cat-result-detail-desc">{winnerDish.description}</p>
-            <div className="cat-actions">
-              <Link to={`/dish/${winnerDish.slug}`} className="cat-action-link">Xem chi tiết + quán + công thức →</Link>
-              <button className="cat-back" onClick={reset} type="button">← Quay lại chọn món khác</button>
-            </div>
+          <div className="cat-actions">
+            <button className="cat-back" onClick={reset} type="button">⟲ Quay lại (nhờ mèo chọn lại)</button>
           </div>
         </div>
       )}
