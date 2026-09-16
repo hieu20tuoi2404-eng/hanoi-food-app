@@ -87,6 +87,19 @@ export default function HoiMeo() {
     return () => { cancelled = true }
   }, [])
 
+  // Fast reel roll while spinning: food images swap every 350ms
+  useEffect(() => {
+    if (phase !== 'spinning') return
+    const roll = async () => {
+      try {
+        const results = await Promise.all(CAT_PATHS.map(() => fetchRandomDish()))
+        if (mountedRef.current && phaseRef.current === 'spinning') setBadges(results)
+      } catch {}
+    }
+    const id = window.setInterval(roll, 350)
+    return () => clearInterval(id)
+  }, [phase])
+
   // Random dish cycling while idle: badges keep getting new random foods
   // while still following the cats (trang truanayangi: badges "rolling" qua các món)
   useEffect(() => {
@@ -281,21 +294,27 @@ export default function HoiMeo() {
           <div className="cat-results-heading">
             <span>🐱 HỘI MÈO</span>
             <h2>Con mèo này chốt cho bạn món!</h2>
-            <p>Món {winnerDish.name} hiện lên trên đầu một em mèo 🎉</p>
+            <p>3 em mèo mỗi em chọn một món, em nào chốt trước là món trưa nay 🎉</p>
           </div>
           <div className="cat-result-list">
-            <div className="cat-result-card cat-card-enter is-selected" style={{ '--cat-tier-color': RARITY_COLORS[winnerDish.rarity?.key] || '#cbd7b7' }}>
-              <div className="cat-result-art">
-                <img src={winnerDish.image_url || '/images/fallback.svg'} alt={winnerDish.name} className="food-image" onError={e => { e.target.src = '/images/fallback.svg' }} />
+            {badges.map((dish, i) => dish && (
+              <div
+                key={i}
+                className={`cat-result-card cat-card-enter ${i === winnerIdx ? 'is-selected' : 'not-selected'}`}
+                style={{ '--cat-tier-color': dish.rarity?.key ? RARITY_COLORS[dish.rarity.key] || dish.rarity.color : '#cbd7b7' }}
+              >
+                <div className="cat-result-art">
+                  <img src={dish.image_url || '/images/fallback.svg'} alt={dish.name} className="food-image" onError={e => { e.target.src = '/images/fallback.svg' }} />
+                </div>
+                <div className="cat-result-copy">
+                  <small>{dish.category || 'Món ngon'}</small>
+                  <strong>{dish.name}</strong>
+                  <div className="cat-price">{dish.avg_price?.toLocaleString('vi-VN')}đ</div>
+                  <div className="cat-tier-tag">{dish.rarity?.name || 'Món ngon'}</div>
+                </div>
+                <span className="cat-select-label">{i === winnerIdx ? 'chốt ✓' : '–'}</span>
               </div>
-              <div className="cat-result-copy">
-                <small>{winnerDish.category || 'Món ngon'}</small>
-                <strong>{winnerDish.name}</strong>
-                <div className="cat-price">{winnerDish.avg_price?.toLocaleString('vi-VN')}đ</div>
-                <div className="cat-tier-tag">{winnerDish.rarity?.name || 'Món ngon'}</div>
-              </div>
-              <span className="cat-select-label">chốt ✓</span>
-            </div>
+            ))}
           </div>
           <div className="cat-result-detail">
             <div className="cat-result-detail-head"><RarityBadge rarity={winnerDish.rarity} /></div>

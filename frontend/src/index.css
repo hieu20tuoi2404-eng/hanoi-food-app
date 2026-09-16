@@ -2618,7 +2618,7 @@ body {
   position: absolute;
   left: 0;
   top: 0;
-  width: 11%;
+  width: 7%;
   aspect-ratio: 1;
   z-index: 10;
   pointer-events: none;
@@ -2748,6 +2748,13 @@ body {
   display: flex;
   justify-content: center;
   padding: 4px 14px 6px;
+}
+/* Kick → cats jump + badges roll like a reel */
+.cat-stage.spinning .cat-video-wrap {
+  animation: cat-jump 0.5s ease-in-out infinite;
+}
+.cat-stage.spinning .cat-badge-content {
+  animation: cat-spin-roll 0.5s linear infinite;
 }
 .cat-kick {
   min-height: 46px;
@@ -3032,6 +3039,15 @@ body {
 @keyframes cat-food-bob {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
+}
+@keyframes cat-jump {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes cat-spin-roll {
+  0% { transform: rotate(-8deg) scale(1.08); }
+  50% { transform: rotate(8deg) scale(1.08); }
+  100% { transform: rotate(-8deg) scale(1.08); }
 }
 @keyframes cat-food-pop {
   0% { opacity: 0; transform: scale(0.7) rotate(-6deg); }
