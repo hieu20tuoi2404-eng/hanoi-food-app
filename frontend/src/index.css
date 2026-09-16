@@ -1419,11 +1419,28 @@ body {
   margin-bottom: 14px;
   text-align: center;
 }
-.fate-banner-tag,
-.fate-banner-sub {
-  display: none;
+.fate-banner-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 12px;
+  margin-bottom: 10px;
 }
 .fate-banner-title {
+  font-size: 1.4rem;
+  margin: 0 0 4px;
+}
+.fate-banner-sub {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+}
 .fate-btn-secondary {
   display: block;
   width: 100%;

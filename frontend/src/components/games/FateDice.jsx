@@ -129,7 +129,9 @@ export default function FateDice() {
   return (
     <div className="widget fate-widget">
       <div className="fate-banner">
+        <span className="fate-banner-tag">HỘI THỢ LÙN · VẠN SỰ TÙY DUYÊN</span>
         <h2 className="fate-banner-title">Vạn sự tùy duyên</h2>
+        <p className="fate-banner-sub">Một lượt xúc. Để duyên dẫn đường.</p>
       </div>
 
       <div className="reel-window" ref={winRef}>
