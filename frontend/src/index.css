@@ -2824,3 +2824,100 @@ body {
   .hoi-meo-result-img { width: 100%; height: auto; max-width: 280px; }
   .hoi-meo-title { font-size: 1.35rem; }
 }
+
+/* ===== Reel spin ===== */
+.hoi-meo-reel-wrap {
+  margin: 1.5rem auto 0;
+  max-width: 420px;
+  position: relative;
+}
+.hoi-meo-reel-mask {
+  overflow: hidden;
+  border-radius: 16px;
+  background: rgba(20,20,30,0.9);
+  border: 2px solid rgba(255,255,255,0.18);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.hoi-meo-reel-track {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+  transition: transform 0ms linear;
+}
+.hoi-meo-reel-wrap.spinning .hoi-meo-reel-track {
+  transition: transform 2.5s cubic-bezier(0.08, 0.82, 0.17, 1);
+}
+.hoi-meo-reel-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 120px;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.hoi-meo-reel-item:last-child { border-bottom: none; }
+.hoi-meo-reel-img { width: 56px; height: 56px; object-fit: cover; border-radius: 10px; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.1); }
+.hoi-meo-reel-name { font-size: 0.85rem; font-weight: 600; color: #fff; text-align: center; margin-bottom: 2px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+.hoi-meo-reel-price { font-size: 0.72rem; color: #fde047; font-weight: 700; }
+.hoi-meo-reel-rating { font-size: 0.68rem; color: rgba(255,255,255,0.55); }
+
+.hoi-meo-reel-gradient-top,
+.hoi-meo-reel-gradient-bottom {
+  position: absolute;
+  left: 0; right: 0; height: 40%;
+  pointer-events: none; z-index: 2;
+}
+.hoi-meo-reel-gradient-top { top: 0; background: linear-gradient(180deg, rgba(20,20,30,0.95) 0%, transparent 100%); }
+.hoi-meo-reel-gradient-bottom { bottom: 0; background: linear-gradient(0deg, rgba(20,20,30,0.95) 0%, transparent 100%); }
+
+.hoi-meo-reel-pointer {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%; height: 2px;
+  background: #fde047;
+  box-shadow: 0 0 12px #fde047, 0 0 24px #fde047;
+  z-index: 3;
+}
+.hoi-meo-reel-pointer::before,
+.hoi-meo-reel-pointer::after {
+  content: ''; position: absolute; top: 50%; width: 10px; height: 10px;
+  background: #fde047; clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+.hoi-meo-reel-pointer::before { left: -6px; transform: translateY(-50%) rotate(-90deg); }
+.hoi-meo-reel-pointer::after { right: -6px; transform: translateY(-50%) rotate(90deg); }
+
+.hoi-meo-spin-label {
+  position: absolute; left: 50%; bottom: -28px;
+  transform: translateX(-50%);
+  font-size: 0.78rem; color: #fde047;
+  font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(253,224,71,0.6);
+  animation: hoi-meo-spin-pulse 0.8s ease-in-out infinite;
+}
+@keyframes hoi-meo-spin-pulse {
+  0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+}
+
+/* ===== Confetti ===== */
+.hoi-meo-confetti {
+  position: fixed; inset: 0; pointer-events: none; z-index: 100; overflow: hidden;
+}
+.hoi-meo-confetti-piece {
+  position: absolute; border-radius: 2px; will-change: transform, opacity;
+  animation: hoi-meo-confetti-fall 3.5s ease-in forwards;
+}
+@keyframes hoi-meo-confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(130vh) rotate(720deg); opacity: 0; }
+}
+
+@media (max-width: 640px) {
+  .hoi-meo-reel-wrap { max-width: 100%; margin: 1rem auto 0; }
+  .hoi-meo-reel-item { height: 100px; padding: 10px; }
+  .hoi-meo-reel-img { width: 48px; height: 48px; }
+}
