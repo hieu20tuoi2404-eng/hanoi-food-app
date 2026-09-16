@@ -2736,10 +2736,42 @@ body {
   margin-bottom: 8px;
 }
 
+/* 4 life-domain breakdown */
+.qd-domains {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.qd-domain {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--accent) 4%, var(--card-bg));
+}
+.qd-domain-icon {
+  font-size: 0.95rem;
+  margin-right: 6px;
+}
+.qd-domain-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+.qd-domain-text {
+  display: block;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text);
+  margin-top: 3px;
+}
+
 @media (max-width: 640px) {
   .qd-line-hidden,
   .qd-line-solid { width: 110px; }
   .qd-line-broken { width: 110px; }
   .qd-result-hex { flex-direction: column; align-items: center; }
   .qd-coin { width: 44px; height: 44px; font-size: 0.95rem; }
+  .qd-domains { grid-template-columns: 1fr; }
 }

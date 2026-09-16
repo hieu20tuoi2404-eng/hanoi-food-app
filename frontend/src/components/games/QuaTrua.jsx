@@ -224,6 +224,12 @@ export default function QuaTrua() {
                 <span>{TRI_EMOJI[hex.upper] || '?'} Thượng: {hex.upper}</span>
               </div>
               <p className="qd-result-y">{hex.y}</p>
+              <div className="qd-domains">
+                <div className="qd-domain"><span className="qd-domain-icon">💼</span><span className="qd-domain-label">Công việc</span><span className="qd-domain-text">{hex.cv}</span></div>
+                <div className="qd-domain"><span className="qd-domain-icon">❤️</span><span className="qd-domain-label">Tình duyên</span><span className="qd-domain-text">{hex.td}</span></div>
+                <div className="qd-domain"><span className="qd-domain-icon">🩺</span><span className="qd-domain-label">Sức khỏe</span><span className="qd-domain-text">{hex.sk}</span></div>
+                <div className="qd-domain"><span className="qd-domain-icon">💰</span><span className="qd-domain-label">Tài lộc</span><span className="qd-domain-text">{hex.tl}</span></div>
+              </div>
             </div>
           </div>
 
