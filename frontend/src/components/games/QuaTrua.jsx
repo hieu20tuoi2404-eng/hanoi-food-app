@@ -30,6 +30,18 @@ function shuffle(arr) {
   return a
 }
 
+function normalizeVn(str) {
+  return (str || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .trim()
+}
+
+// Tên món trong lời gợi ý của quẻ (phần trước dấu gạch ngang)
+function foodKeyword(food) {
+  return normalizeVn((food || '').split(/[—–]/)[0])
+}
+
 const COIN_INTERVAL = 700
 const LINE_DRAW_MS = 300
 
@@ -131,7 +143,12 @@ export default function QuaTrua() {
       if (kind) fpool = fpool.filter(d => d.meal_type === kind)
       if (budget > 0) fpool = fpool.filter(d => d.avg_price > 0 && d.avg_price <= budget)
       if (!fpool.length) fpool = pool
-      const chosen = fpool[Math.floor(Math.random() * fpool.length)]
+
+      // Ưu tiên chọn món khớp với gợi ý của quẻ (hex.food)
+      const kw = foodKeyword(hexResult.food)
+      const matching = kw ? fpool.filter(d => normalizeVn(d.name).includes(kw)) : []
+      const chosenPool = matching.length ? matching : fpool
+      const chosen = chosenPool[Math.floor(Math.random() * chosenPool.length)]
       setDish(chosen)
 
       setPhase('done')
@@ -257,9 +274,13 @@ export default function QuaTrua() {
                 </div>
               </div>
               <p className="quatrua-mascot">
-                {mascot
-                  ? `${mascot.emoji} Gợi ý vui từ linh vật ${mascot.name}: ${hex.food}`
-                  : `☯️ ${hex.food}`}
+                {normalizeVn(dish.name).includes(foodKeyword(hex.food))
+                  ? mascot
+                    ? `${mascot.emoji} Gợi ý vui từ linh vật ${mascot.name}: ${hex.food}`
+                    : `☯️ ${hex.food}`
+                  : mascot
+                    ? `${mascot.emoji} Gợi ý vui từ linh vật ${mascot.name}: ${dish.description}`
+                    : `☯️ ${dish.description}`}
               </p>
             </div>
           )}
