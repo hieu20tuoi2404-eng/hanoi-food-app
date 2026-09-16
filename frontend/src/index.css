@@ -1959,6 +1959,10 @@ body {
 
 /* Mascot picker (full screen on first launch + /chon-con-giap) */
 .mascot-picker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow-y: auto;
   min-height: 100vh;
   display: flex;
   align-items: center;

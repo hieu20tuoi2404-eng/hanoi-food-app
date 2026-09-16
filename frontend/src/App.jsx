@@ -31,17 +31,16 @@ export default function App() {
   const { mascotReady, mascotId, pickerSeen } = useApp()
   const loc = useLocation()
 
-  // First launch: show the zodiac picker before anything else (unless the user
-  // already skipped or picked a mascot).
+  // First launch: show the zodiac picker as an overlay (never unmount the app,
+  // so Home + Hoi Mèo stay mounted and stable while the user picks a mascot).
   const showFirstLaunch = mascotReady && !mascotId && !pickerSeen && loc.pathname !== '/chon-con-giap'
 
-  if (showFirstLaunch) {
-    return <MascotPicker />
-  }
-
   return (
-    <div className="app">
-      <AppRoutes />
-    </div>
+    <>
+      <div className="app">
+        <AppRoutes />
+      </div>
+      {showFirstLaunch && <MascotPicker />}
+    </>
   )
 }
