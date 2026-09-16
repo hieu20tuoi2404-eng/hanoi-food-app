@@ -2618,12 +2618,12 @@ body {
   position: absolute;
   left: 0;
   top: 0;
-  width: 8.5%;
+  width: 9%;
   aspect-ratio: 1;
   z-index: 10;
   pointer-events: none;
   will-change: transform;
-  transform: translate(-50%, -80%);
+  transform: translate(-50%, -58%);
   transition: opacity 0.18s ease-out;
 }
 .cat-badge.obscured { opacity: 0; }
