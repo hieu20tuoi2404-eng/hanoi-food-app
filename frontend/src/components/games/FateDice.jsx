@@ -134,8 +134,9 @@ export default function FateDice() {
         <p className="fate-banner-sub">Một lượt xúc. Để duyên dẫn đường.</p>
       </div>
 
-      <div className="reel-window" ref={winRef}>
+      <div className={`reel-window ${phase === 'spinning' ? 'reel-spinning' : ''}`} ref={winRef}>
         <div className="reel-selector" />
+        {phase === 'spinning' && <div className="reel-scanline" />}
         <div
           className="reel-track"
           style={{ transform: `translateX(-${translate}px)`, transition }}

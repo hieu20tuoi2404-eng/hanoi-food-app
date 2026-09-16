@@ -481,6 +481,48 @@ body {
 .reel-card-land {
   box-shadow: 0 0 0 2px var(--rc, #9d998d), 0 6px 20px rgba(0, 0, 0, 0.18);
   transform: translateY(-3px);
+  animation: rarity-glow 1.6s ease-in-out infinite;
+}
+@keyframes rarity-glow {
+  0%, 100% { box-shadow: 0 0 0 2px var(--rc, #9d998d), 0 0 14px rgba(0, 0, 0, 0.2); }
+  50% { box-shadow: 0 0 0 2px var(--rc, #9d998d), 0 0 26px color-mix(in srgb, var(--rc, #9d998d) 55%, transparent), 0 8px 22px rgba(0, 0, 0, 0.25); }
+}
+/* Blur-sharpen: ảnh mờ khi quay nhanh, nét lại khi dừng */
+.reel-card img {
+  transition: filter 0.45s ease, transform 0.45s ease;
+}
+.reel-window.reel-spinning .reel-card img {
+  filter: blur(7px) saturate(0.72) brightness(0.92);
+  transform: scale(1.07);
+}
+.reel-window.reel-spinning .reel-card-name,
+.reel-window.reel-spinning .reel-card-sub {
+  opacity: 0.35;
+  transition: opacity 0.3s;
+}
+.reel-card-name,
+.reel-card-sub {
+  transition: opacity 0.4s ease 0.1s;
+}
+.reel-window.reel-spinning .reel-card {
+  border-color: color-mix(in srgb, var(--rc, #9d998d) 45%, var(--border));
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+/* scan-line sweep khi quay */
+.reel-scanline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -40%;
+  width: 34%;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 61, 113, 0.16), transparent);
+  animation: scan-sweep 1s linear infinite;
+}
+@keyframes scan-sweep {
+  from { left: -40%; }
+  to { left: 110%; }
 }
 .reel-selector {
   position: absolute;
