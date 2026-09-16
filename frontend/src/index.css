@@ -2616,17 +2616,20 @@ body {
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   z-index: 10;
+  pointer-events: none;
   transition: transform 0.12s ease-out, opacity 0.18s ease-out, filter 0.12s;
-  cursor: pointer;
   animation: cat-float 3s ease-in-out infinite;
 }
 .cat-badge:nth-child(2) { animation-delay: -0.6s; animation-duration: 3.4s; }
 .cat-badge:nth-child(3) { animation-delay: -1.2s; animation-duration: 2.8s; }
 .cat-badge:nth-child(4) { animation-delay: -0.3s; animation-duration: 3.2s; }
 .cat-badge:nth-child(5) { animation-delay: -1.8s; animation-duration: 3.6s; }
-.cat-badge:hover { transform: translate(-50%, -50%) scale(1.12); filter: brightness(1.15); }
-.cat-badge.locked { transform: translate(-50%, -50%) scale(1.15); animation: cat-lock 0.24s cubic-bezier(0.16,1,0.3,1); }
-.cat-badge.not-selected { opacity: 0.4; pointer-events: none; filter: grayscale(0.5); }
+.cat-badge.locked { transform: translate(-50%, -50%) scale(1.18); animation: cat-lock 0.24s cubic-bezier(0.16,1,0.3,1); }
+.cat-badge.obscured { opacity: 0; pointer-events: none; }
+.cat-badge.waiting .cat-badge-content {
+  background: #f3f0e7;
+  border-color: #cbd7b7;
+}
 .cat-badge-content {
   position: relative;
   width: 100%;
@@ -2641,9 +2644,12 @@ body {
   overflow: hidden;
   transition: box-shadow 0.15s, border-color 0.15s, transform 0.12s;
 }
-.cat-badge:hover .cat-badge-content {
-  box-shadow: 0 3px 16px #0009, 0 0 12px color-mix(in srgb, var(--cat-tier-color) 50%, transparent);
-  transform: scale(1.04);
+.cat-badge-content .food-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(1.05);
 }
 .cat-badge.locked .cat-badge-content {
   border-color: var(--cat-tier-color);
@@ -2657,7 +2663,7 @@ body {
 }
 .cat-badge-name {
   position: absolute;
-  top: calc(100% + 4px);
+  bottom: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
@@ -2716,6 +2722,45 @@ body {
   transition: background 0.12s;
 }
 .cat-mute:hover { background: #364236; }
+
+/* Kick button */
+.cat-kick-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 4px 14px 6px;
+}
+.cat-kick {
+  min-height: 46px;
+  padding: 10px 26px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: #202820;
+  background: #cbd7b7;
+  border: 1px solid #e6ecd9;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #9fae87, 0 6px 16px #0003;
+  transition: transform 0.12s, box-shadow 0.12s, filter 0.12s;
+}
+.cat-kick:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 #9fae87, 0 10px 22px #0004;
+  filter: brightness(1.04);
+}
+.cat-kick:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #9fae87, 0 4px 10px #0003;
+}
+.cat-kick:disabled {
+  cursor: default;
+  filter: saturate(0.6) brightness(0.9);
+  animation: cat-pulse 0.7s ease-in-out infinite;
+}
+@keyframes cat-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
 
 /* Status text */
 .cat-status {

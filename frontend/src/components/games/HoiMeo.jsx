@@ -4,31 +4,53 @@ import RarityBadge from '../cards/RarityBadge'
 
 const API = import.meta.env.VITE_API_BASE || ''
 
-const CATS = [
-  { id: 'meo-an-sang', name: 'Mèo Sáng', emoji: '🐱', meal: 'breakfast', tierColor: '#fbbf24', left: '18%', top: '62%' },
-  { id: 'meo-trua', name: 'Mèo Trưa', emoji: '😺', meal: 'lunch', tierColor: '#fb923c', left: '40%', top: '57%' },
-  { id: 'meo-toi', name: 'Mèo Tối', emoji: '🐱‍👤', meal: 'dinner', tierColor: '#8b5cf6', left: '50%', top: '53%' },
-  { id: 'meo-an-vat', name: 'Mèo Vặt', emoji: '😸', meal: 'snack', tierColor: '#ec4899', left: '62%', top: '52%' },
-  { id: 'meo-nhau', name: 'Mèo Nhậu', emoji: '😾', meal: 'drinking', tierColor: '#ef4444', left: '83%', top: '60%' },
+const RARITY_COLORS = {
+  common: '#9d998d',
+  rare: '#71a69a',
+  epic: '#aa8cbb',
+  legendary: '#d65b64',
+  mythic: '#d65b64',
+}
+
+const CAT_POSITIONS = [
+  { left: '18%', top: '62%' },
+  { left: '40%', top: '57%' },
+  { left: '50%', top: '53%' },
+  { left: '62%', top: '52%' },
+  { left: '83%', top: '60%' },
 ]
 
 const VIDEO_URL = 'https://github.com/hieu20tuoi2404-eng/video/raw/main/cats-office-wide.mp4'
 
+const fetchRandomDish = async () => {
+  const res = await fetch(`${API}/api/dishes/random`)
+  if (!res.ok) throw new Error('Lỗi API')
+  return res.json()
+}
+
+const delay = (ms) => new Promise(r => setTimeout(r, ms))
+
 export default function HoiMeo() {
-  const [phase, setPhase] = useState('idle')
-  const [lockedCat, setLockedCat] = useState(null)
-  const [dishes, setDishes] = useState([])
-  const [selectedDish, setSelectedDish] = useState(null)
+  const [badges, setBadges] = useState(Array.from({ length: CAT_POSITIONS.length }, () => null))
+  const [phase, setPhase] = useState('idle') // idle | spinning | revealed
+  const [winnerIdx, setWinnerIdx] = useState(null)
+  const [winnerDish, setWinnerDish] = useState(null)
   const [error, setError] = useState('')
   const [muted, setMuted] = useState(true)
   const audioRef = useRef({})
   const audioCtxRef = useRef(null)
+  const mountedRef = useRef(true)
 
   const unlockAudio = useCallback(() => {
     try {
       if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)()
       if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume()
     } catch {}
+  }, [])
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
   }, [])
 
   useEffect(() => {
@@ -42,134 +64,156 @@ export default function HoiMeo() {
     })
   }, [])
 
+  // Load one random dish per cat position
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const results = await Promise.all(CAT_POSITIONS.map(() => fetchRandomDish()))
+        if (!cancelled) setBadges(results)
+      } catch {
+        setError('Không lấy được món — kiểm tra kết nối')
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
   const play = useCallback((key, vol = 0.5) => {
     if (muted) return
     const a = audioRef.current[key]
     if (a) { a.currentTime = 0; a.volume = vol; a.play().catch(() => {}) }
   }, [muted])
 
-  const pick = useCallback(async (cat) => {
+  const kick = useCallback(async () => {
     if (phase !== 'idle') return
     unlockAudio()
-    setLockedCat(cat)
-    setPhase('picking')
+    setPhase('spinning')
+    setWinnerIdx(null)
+    setWinnerDish(null)
     setError('')
     play('open', 0.7)
 
-    await new Promise(r => setTimeout(r, 900))
-    setPhase('revealing')
-    play('tick', 0.3)
-
     try {
-      const results = await Promise.all(
-        Array.from({ length: 3 }, () =>
-          fetch(`${API}/api/dishes/random?meal=${cat.meal}`).then(r => { if (!r.ok) throw new Error('Lỗi API'); return r.json() })
-        )
-      )
-      const seen = new Set()
-      const unique = results.filter(d => { if (seen.has(d.id)) return false; seen.add(d.id); return true })
-      await new Promise(r => setTimeout(r, 500))
+      const winner = await fetchRandomDish()
+      await delay(950)
+      if (!mountedRef.current) return
+      play('tick', 0.3)
+      const idx = Math.floor(Math.random() * CAT_POSITIONS.length)
+      setWinnerIdx(idx)
+      setWinnerDish(winner)
+      setBadges(prev => {
+        const next = [...prev]
+        next[idx] = winner
+        return next
+      })
+      await delay(350)
       play('reveal', 0.8)
-      setDishes(unique.length >= 2 ? unique : results)
-      setPhase('results')
+      setPhase('revealed')
     } catch (e) {
-      setError(e.message)
+      if (!mountedRef.current) return
+      setError(e.message || 'Không lấy được món')
       setPhase('idle')
     }
   }, [phase, unlockAudio, play])
 
-  const reset = useCallback(() => {
-    setPhase('idle'); setLockedCat(null); setDishes([]); setSelectedDish(null); setError('')
+  const reset = useCallback(async () => {
+    setPhase('idle')
+    setWinnerIdx(null)
+    setWinnerDish(null)
+    setError('')
+    try {
+      const results = await Promise.all(CAT_POSITIONS.map(() => fetchRandomDish()))
+      if (mountedRef.current) setBadges(results)
+    } catch {}
   }, [])
 
   const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   return (
-    <div className={`cat-stage ${phase === 'results' ? 'showing-results' : ''} ${phase === 'revealing' ? 'results-entering' : ''}`}>
+    <div className={`cat-stage ${phase === 'revealed' ? 'showing-results results-entering' : ''}`}>
       {!reducedMotion && (
         <div className="cat-video-wrap">
           <video src={VIDEO_URL} autoPlay loop muted={muted} playsInline poster="/images/fallback.svg" />
-          {CATS.map(cat => (
-            <div
-              key={cat.id}
-              className={`cat-badge ${lockedCat?.id === cat.id ? 'locked' : ''} ${lockedCat && lockedCat.id !== cat.id ? 'not-selected' : ''}`}
-              style={{ left: cat.left, top: cat.top, '--cat-tier-color': cat.tierColor, pointerEvents: phase !== 'idle' ? 'none' : 'auto', cursor: phase === 'idle' ? 'pointer' : 'default' }}
-              onClick={() => pick(cat)}
-            >
-              {lockedCat?.id === cat.id && (<><div className="cat-lock-ring" /><div className="cat-lock-sparks" /></>)}
-              <div className="cat-badge-content">
-                <span className="cat-question">{cat.emoji}</span>
+          {CAT_POSITIONS.map((pos, i) => {
+            const dish = badges[i]
+            const isLocked = phase === 'revealed' && winnerIdx === i
+            const obscured = phase !== 'idle' && !isLocked
+            const tierColor = isLocked && winnerDish?.rarity?.key
+              ? RARITY_COLORS[winnerDish.rarity.key] || winnerDish.rarity.color
+              : (dish?.rarity?.key ? RARITY_COLORS[dish.rarity.key] || dish.rarity.color : '#cbd7b7')
+            return (
+              <div
+                key={i}
+                className={`cat-badge ${isLocked ? 'locked' : ''} ${obscured ? 'obscured' : ''} ${dish ? 'ready' : 'waiting'}`}
+                style={{ left: pos.left, top: pos.top, '--cat-tier-color': tierColor }}
+              >
+                {isLocked && (<><div className="cat-lock-ring" /><div className="cat-lock-sparks" /></>)}
+                <div className="cat-badge-content">
+                  {dish ? (
+                    <img src={dish.image_url || '/images/fallback.svg'} alt={dish.name} className="food-image" onError={e => { e.target.src = '/images/fallback.svg' }} />
+                  ) : (
+                    <span className="cat-question">?</span>
+                  )}
+                </div>
+                {isLocked && dish && <span className="cat-badge-name">{dish.name}</span>}
               </div>
-              <span className="cat-badge-name">{cat.name}</span>
-            </div>
-          ))}
+            )
+          })}
           <button className="cat-mute" onClick={() => setMuted(m => !m)} type="button">
-            {muted ? '🔇 Tắt tiếng' : '🔊 Có tiếng'}
+            {muted ? '🔇 Tắt' : '🔊 Bật'}
           </button>
         </div>
       )}
 
       {reducedMotion && (
         <div className="cat-motion-note">
-          <p className="cat-question">Chọn một em mèo!</p>
-          <div className="cat-reduced-btns">
-            {CATS.map(cat => (
-              <button key={cat.id} className="cat-reduced-btn" onClick={() => pick(cat)} disabled={phase !== 'idle'} type="button" style={{ '--cat-tier-color': cat.tierColor }}>
-                <span>{cat.emoji}</span><strong>{cat.name}</strong>
-              </button>
-            ))}
-          </div>
+          <p className="cat-question">Mỗi em mèo có một món ngon trên đầu!</p>
         </div>
       )}
 
-      {phase === 'picking' && <div className="cat-status">Đang chọn...</div>}
-      {phase === 'revealing' && <div className="cat-status">Đang mở kho...</div>}
-      {error && <div className="cat-status cat-error">{error}</div>}
+      {/* Spin action */}
+      {phase !== 'revealed' && (
+        <div className="cat-kick-wrap">
+          <button className="cat-kick" onClick={kick} disabled={phase !== 'idle'} type="button" aria-busy={phase === 'spinning'}>
+            {phase === 'spinning' ? 'ĐANG QUAY...' : 'KICK NGAY ↗'}
+          </button>
+        </div>
+      )}
 
-      {phase === 'results' && (
+      {error && <div className="cat-status cat-error">{error}</div>}
+      {phase === 'spinning' && <div className="cat-status">Đang chọn món...</div>}
+      {phase === 'idle' && <div className="cat-status">Bấm Kick để quay món trưa nay!</div>}
+
+      {phase === 'revealed' && winnerDish && (
         <div className="cat-results">
           <div className="cat-results-heading">
-            <span>{lockedCat?.emoji} HỘI MÈO</span>
-            <h2>{lockedCat?.name} gợi ý cho bạn</h2>
-            <p>Chọn một món để xem chi tiết!</p>
+            <span>🐱 HỘI MÈO</span>
+            <h2>Em mèo này chốt cho bạn món!</h2>
+            <p>Món {winnerDish.name} xuất hiện trên đầu một em mèo 🎉</p>
           </div>
           <div className="cat-result-list">
-            {dishes.map((dish, i) => (
-              <div
-                key={`${dish.id}-${i}`}
-                className={`cat-result-card cat-card-enter ${selectedDish?.id === dish.id ? 'is-selected' : selectedDish ? 'not-selected' : ''}`}
-                style={{ '--cat-tier-color': lockedCat?.tierColor, animationDelay: `${i * 120}ms` }}
-                onClick={() => setSelectedDish(dish)}
-              >
-                <div className="cat-result-art">
-                  <img src={dish.image_url || '/images/fallback.svg'} alt={dish.name} className="food-image" onError={e => { e.target.src = '/images/fallback.svg' }} />
-                </div>
-                <div className="cat-result-copy">
-                  <small>{lockedCat?.name}</small>
-                  <strong>{dish.name}</strong>
-                  <div className="cat-price">{dish.avg_price?.toLocaleString('vi-VN')}đ</div>
-                  <div className="cat-tier-tag">{dish.rarity?.name || 'Món ngon'}</div>
-                </div>
-                <span className="cat-select-label">chọn →</span>
+            <div className="cat-result-card cat-card-enter is-selected" style={{ '--cat-tier-color': RARITY_COLORS[winnerDish.rarity?.key] || '#cbd7b7' }}>
+              <div className="cat-result-art">
+                <img src={winnerDish.image_url || '/images/fallback.svg'} alt={winnerDish.name} className="food-image" onError={e => { e.target.src = '/images/fallback.svg' }} />
               </div>
-            ))}
-          </div>
-
-          {selectedDish && (
-            <div className="cat-result-detail">
-              <div className="cat-result-detail-head">
-                <RarityBadge rarity={selectedDish.rarity} />
+              <div className="cat-result-copy">
+                <small>{winnerDish.category || 'Món ngon'}</small>
+                <strong>{winnerDish.name}</strong>
+                <div className="cat-price">{winnerDish.avg_price?.toLocaleString('vi-VN')}đ</div>
+                <div className="cat-tier-tag">{winnerDish.rarity?.name || 'Món ngon'}</div>
               </div>
-              <p className="cat-result-detail-desc">{selectedDish.description}</p>
-              <div className="cat-actions">
-                <Link to={`/dish/${selectedDish.slug}`} className="cat-action-link">Xem chi tiết + quán + công thức →</Link>
-                <button className="cat-back" onClick={reset} type="button">← Chọn lại con khác</button>
-              </div>
+              <span className="cat-select-label">chốt ✓</span>
             </div>
-          )}
-          {!selectedDish && (
-            <button className="cat-back" onClick={reset} type="button">← Chọn lại con khác</button>
-          )}
+          </div>
+          <div className="cat-result-detail">
+            <div className="cat-result-detail-head"><RarityBadge rarity={winnerDish.rarity} /></div>
+            <p className="cat-result-detail-desc">{winnerDish.description}</p>
+            <div className="cat-actions">
+              <Link to={`/dish/${winnerDish.slug}`} className="cat-action-link">Xem chi tiết + quán + công thức →</Link>
+              <button className="cat-back" onClick={reset} type="button">← Quay lại chọn món khác</button>
+            </div>
+          </div>
         </div>
       )}
 
