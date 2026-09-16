@@ -7,6 +7,7 @@ import ExplorationProfile from '../components/collection/ExplorationProfile'
 import ZodiacWidget from '../components/widgets/ZodiacWidget'
 import FateDice from '../components/games/FateDice'
 import GroupVote from '../components/games/GroupVote'
+import KhoBau from '../components/games/KhoBau'
 import { Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 
@@ -123,6 +124,9 @@ export default function Home() {
 
       {/* Exploration profile */}
       <ExplorationProfile />
+
+      {/* Két Kho Báu */}
+      <KhoBau />
 
       {/* Loot box */}
       <LootBox />

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import RarityBadge from '../cards/RarityBadge'
 import { BUDGETS, budgetParam } from '../widgets/FilterBar'
@@ -14,57 +14,28 @@ export const MEAL_OPTIONS = [
   { slug: 'drinking', label: 'Món nhậu' },
 ]
 
-const CARD_W = 176
-const GAP = 14
-const STEP = CARD_W + GAP
-const WINNER_INDEX = 14
-const AFTER_WINNER = 8
-const REEL_LEN = WINNER_INDEX + AFTER_WINNER + 1
-const SPIN_MS = 2600
-
-const RARITY_TIER = {
-  common: 'THƯỜNG',
-  rare: 'HIẾM',
-  epic: 'SỬ THI',
-  legendary: 'HUYỀN THOẠI',
-}
-
-const RARITY_COLOR = {
-  common: '#9d998d',
-  rare: '#71a69a',
-  epic: '#aa8cbb',
-  legendary: '#e4c879',
-}
-
-function shuffle(arr) {
-  const a = arr.slice()
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
-
 export default function LootBox({ onSpinStart }) {
   const [budget, setBudget] = useState('t30_60')
   const [meal, setMeal] = useState('')
   const [state, setState] = useState('idle') // idle | spinning | result | error
-  const [reel, setReel] = useState([])
-  const [translate, setTranslate] = useState(0)
-  const [transition, setTransition] = useState('none')
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
-  const winRef = useRef(null)
-  const timerRef = useRef(null)
-
-  useEffect(() => () => clearTimeout(timerRef.current), [])
+  const [flash, setFlash] = useState(0)
+  const spins = useRef(0)
 
   const openBox = async () => {
-    if (state === 'spinning') return
     setState('spinning')
     setResult(null)
     setError('')
+    setFlash(0)
+    spins.current = 0
     if (onSpinStart) onSpinStart()
+
+    // fun spinning animation
+    const spinTimer = setInterval(() => {
+      spins.current += 1
+      setFlash(spins.current)
+    }, 140)
 
     try {
       const p = new URLSearchParams()
@@ -73,40 +44,21 @@ export default function LootBox({ onSpinStart }) {
       if (budgetQ.min_price) p.set('min_price', budgetQ.min_price)
       if (budgetQ.max_price) p.set('max_price', budgetQ.max_price)
       const q = p.toString()
-      const res = await fetch(`${API}/api/dishes${q ? `?${q}` : ''}`)
-      if (!res.ok) throw new Error('Không lấy được danh sách món')
-      const list = await res.json()
-      if (!list.length) throw new Error('Không có món nào khớp — thử tăng ngân sách hoặc đổi bữa nhé!')
-      const winner = list[Math.floor(Math.random() * list.length)]
-
-      const raw = [winner, ...shuffle(list.filter((d) => d.id !== winner.id))]
-      const startOff = Math.floor(Math.random() * raw.length)
-      const cards = []
-      for (let i = 0; i < REEL_LEN; i++) {
-        if (i === WINNER_INDEX) cards.push(winner)
-        else cards.push(raw[(startOff + i) % raw.length])
+      const res = await fetch(`${API}/api/dishes/random${q ? `?${q}` : ''}`)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.detail || 'Không có món phù hợp với ngân sách này')
       }
-      setReel(cards)
-
-      const winW = winRef.current ? winRef.current.clientWidth : 640
-      const trackW = cards.length * STEP - GAP
-      let finalX = WINNER_INDEX * STEP + CARD_W / 2 - winW / 2
-      finalX = Math.max(0, Math.min(finalX, trackW - winW))
-      const startX = Math.floor(Math.random() * Math.min(180, finalX))
-
-      setTransition('none')
-      setTranslate(startX)
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
-      setTransition('transform 2500ms cubic-bezier(.09,.72,.08,1) 80ms')
-      setTranslate(finalX)
-
-      timerRef.current = setTimeout(() => {
-        setState('result')
-        setResult(winner)
-      }, SPIN_MS)
+      const dish = await res.json()
+      // tiny delay so the spinner is visible
+      await new Promise((r) => setTimeout(r, 900))
+      clearInterval(spinTimer)
+      setResult(dish)
+      setState('result')
     } catch (e) {
-      setState('error')
+      clearInterval(spinTimer)
       setError(e.message)
+      setState('error')
     }
   }
 
@@ -116,41 +68,7 @@ export default function LootBox({ onSpinStart }) {
     <div className="lootbox">
       <div className="lootbox-head">
         <h2 className="lootbox-title"><span className="loot-icon">📦</span> Hòm tiếp tế Hà Nội</h2>
-        <p className="lootbox-sub">Chọn ngân sách, quay hòm &amp; để trời quyết định bữa nay ăn gì!</p>
-      </div>
-
-      <div className={`reel-window ${state === 'spinning' ? 'reel-spinning' : ''}`} ref={winRef}>
-        <div className="reel-selector" />
-        {state === 'spinning' && <div className="reel-scanline" />}
-        <div
-          className="reel-track"
-          style={{ transform: `translateX(-${translate}px)`, transition }}
-        >
-          {reel.map((d, i) => {
-            const color = RARITY_COLOR[d.rarity.key] || RARITY_COLOR.common
-            return (
-              <article
-                className={`reel-card ${i === WINNER_INDEX ? 'reel-card-land' : ''}`}
-                key={`${d.id}-${i}`}
-                style={{ '--rc': color }}
-              >
-                <span className="reel-card-tier">{RARITY_TIER[d.rarity.key] || 'THƯỜNG'}</span>
-                <img
-                  src={d.image_url || '/images/fallback.svg'}
-                  alt={d.name}
-                  loading="lazy"
-                  onError={(e) => { e.target.src = '/images/fallback.svg' }}
-                />
-                <strong className="reel-card-name">{d.name}</strong>
-                <span className="reel-card-sub">
-                  {d.avg_price > 0 ? `${d.avg_price.toLocaleString('vi-VN')}đ` : 'Giá: chưa rõ'}
-                </span>
-              </article>
-            )
-          })}
-        </div>
-        <div className="reel-fade reel-fade-left" />
-        <div className="reel-fade reel-fade-right" />
+        <p className="lootbox-sub">Chọn ngân sách, mở hòm &amp; để trời quyết định bữa nay ăn gì!</p>
       </div>
 
       <div className="lootbox-controls">
@@ -181,42 +99,55 @@ export default function LootBox({ onSpinStart }) {
         </button>
       </div>
 
-      {state === 'error' && (
-        <div className="lootbox-error">{error}</div>
-      )}
-
-      {state === 'spinning' && (
-        <div className="reel-spinning-hint">📦 Đang lựa chọn cho bạn...</div>
-      )}
-
-      {hasResult && (
-        <div className={`lootbox-result rarity-card-${result.rarity.key}`}>
-          <div className="lootbox-result-top">
-            <span className="lootbox-result-label">QUẺ CỦA BẠN</span>
-            <RarityBadge rarity={result.rarity} />
+      {/* Spinner / result zone */}
+      <div className="lootbox-stage">
+        {state === 'spinning' && (
+          <div className="lootbox-spin">
+            <div className={`lootbox-lid ${flash % 2 ? 'lid-up' : 'lid-down'}`} aria-hidden="true" />
+            <div className="lootbox-particles">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <span key={i} className="particle" style={{ ['--i']: i }} />
+              ))}
+            </div>
+            <div className="lootbox-spin-text">Đang lựa chọn cho bạn...</div>
           </div>
-          <div className="lootbox-result-main">
-            <img
-              src={result.image_url || '/images/fallback.svg'}
-              alt={result.name}
-              className="lootbox-result-img"
-              onError={(e) => { e.target.src = '/images/fallback.svg' }}
-            />
-            <div className="lootbox-result-info">
-              <div className="lootbox-result-name">{result.name}</div>
-              <div className="lootbox-result-meta">
-                <span className="dish-card-rating">&#9733; {result.avg_rating.toFixed(1)}/10</span>
-                <span className="dish-card-price">{result.avg_price.toLocaleString('vi-VN')}đ</span>
+        )}
+
+        {state === 'error' && (
+          <div className="lootbox-error">
+            Không có món nào khớp — thử tăng ngân sách hoặc đổi bữa nhé!
+          </div>
+        )}
+
+        {hasResult && (
+          <div className={`lootbox-result rarity-card-${result.rarity.key}`}>
+            <div className="lootbox-result-top">
+              <span className="lootbox-result-label">QUẺ CỦA BẠN</span>
+              <RarityBadge rarity={result.rarity} />
+            </div>
+            <div className="lootbox-result-main">
+              <img
+                src={result.image_url || '/images/fallback.svg'}
+                alt={result.name}
+                className="lootbox-result-img"
+                onError={(e) => { e.target.src = '/images/fallback.svg' }}
+              />
+              <div className="lootbox-result-info">
+                <div className="lootbox-result-name">{result.name}</div>
+                <div className="lootbox-result-meta">
+                  <span className="dish-card-rating">&#9733; {result.avg_rating.toFixed(1)}/10</span>
+                  <span className="dish-card-price">{result.avg_price.toLocaleString('vi-VN')}đ</span>
+                </div>
+                <p className="lootbox-result-desc">{result.description}</p>
+                <Link to={`/dish/${result.slug}`} className="lootbox-result-link">
+                  Xem chi tiết + quán + công thức &#8594;
+                </Link>
+                {result.is_demo && <div className="dish-card-demo">Dữ liệu Demo - Chưa xác minh</div>}
               </div>
-              <p className="lootbox-result-desc">{result.description}</p>
-              <Link to={`/dish/${result.slug}`} className="lootbox-result-link">
-                Xem chi tiết + quán + công thức &#8594;
-              </Link>
-              {result.is_demo && <div className="dish-card-demo">Dữ liệu Demo - Chưa xác minh</div>}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

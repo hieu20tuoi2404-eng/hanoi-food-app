@@ -140,8 +140,7 @@ export default function QuaTrua() {
         <p className="quatrua-sub">Gieo một quẻ xem ăn gì cho &quot;hợp duyên&quot;! Ấn nút để gieo quẻ nhé.</p>
       </div>
 
-      <div className={`reel-window ${phase === 'spinning' ? 'reel-spinning' : ''}`} ref={winRef}>
-        {phase === 'spinning' && <div className="reel-scanline" />}
+      <div className="reel-window" ref={winRef}>
         <div
           className="reel-track"
           style={{ transform: `translateX(-${translate}px)`, transition }}
