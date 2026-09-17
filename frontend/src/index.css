@@ -2765,6 +2765,41 @@ body {
     animation: none !important;
   }
 }
+/* Cats stop (video ends): white flash across the scene + badges burst into final dishes */
+.cat-stage.stopping .cat-video-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: radial-gradient(circle at 46% 42%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 55%);
+  animation: cat-stop-flash 0.8s ease-out both;
+}
+.cat-stage.stopping .cat-badge-content {
+  animation: cat-stop-burst 0.85s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  animation-delay: calc(var(--bi, 0) * 110ms);
+}
+.cat-stage.stopping .cat-badge-name {
+  animation: cat-stop-pop 0.5s ease-out both;
+  animation-delay: calc(var(--bi, 0) * 110ms + 150ms);
+  border-color: var(--cat-tier-color);
+}
+@keyframes cat-stop-flash {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes cat-stop-burst {
+  0% { transform: scale(1.05) rotate(0deg); box-shadow: 0 3px 12px #0009, 0 0 0 0 var(--cat-tier-color); }
+  30% { transform: scale(1.48) rotate(8deg); box-shadow: 0 6px 22px #000b, 0 0 0 10px #ffffffcc, 0 0 28px 6px var(--cat-tier-color); }
+  70% { transform: scale(1.2) rotate(-4deg); box-shadow: 0 4px 16px #000a, 0 0 0 4px #ffffff88; }
+  100% { transform: scale(1.18) rotate(0deg); box-shadow: 0 3px 12px #0009, 0 0 0 0 var(--cat-tier-color); }
+}
+@keyframes cat-stop-pop {
+  0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+  60% { transform: translateX(-50%) scale(1.12); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
 .cat-kick {
   min-height: 46px;
   padding: 10px 26px;
@@ -3093,7 +3128,8 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .cat-stage * { animation: none !important; transition: none !important; }
   .cat-result-card:focus-visible, .cat-result-card:hover:not(:disabled) { transform: none; }
-  .cat-lock-ring, .cat-lock-sparks, .results-entering .cat-video-wrap { display: none; }
+  .cat-lock-ring, .cat-lock-sparks, .results-entering .cat-video-wrap,
+  .cat-stage.stopping .cat-video-wrap::after { display: none; }
 }
 
 /* Responsive */

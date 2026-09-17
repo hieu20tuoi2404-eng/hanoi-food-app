@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { CAT_PATHS, PATH_FPS, PATH_NFRAMES } from './catPaths'
 
 const CAT_NAMES = ['Mèo kem', 'Mặt tròn', 'Đốm đen']
-const LOCK_AT = [4000, 7000, 10000]
 
 const API = import.meta.env.VITE_API_BASE || ''
 
@@ -27,7 +26,7 @@ const delay = (ms) => new Promise(r => setTimeout(r, ms)) // eslint-disable-line
 
 export default function HoiMeo() {
   const [badges, setBadges] = useState(Array.from({ length: CAT_PATHS.length }, () => null))
-  const [phase, setPhase] = useState('idle') // idle | rolling | revealed
+  const [phase, setPhase] = useState('idle') // idle | rolling | stopping | revealed
   const [locked, setLocked] = useState(Array.from({ length: CAT_PATHS.length }, () => false))
   const [error, setError] = useState('')
   const [muted, setMuted] = useState(true)
@@ -40,6 +39,7 @@ export default function HoiMeo() {
   const lockedDishesRef = useRef([])
   const warmPoolRef = useRef([])
   const timersRef = useRef([])
+  const stopHandledRef = useRef(false)
   const phaseRef = useRef(phase)
   phaseRef.current = phase
 
@@ -96,6 +96,45 @@ export default function HoiMeo() {
 
   useEffect(() => () => clearTimers(), [clearTimers])
 
+  // Live reads so a cold-start refill still feeds the roll
+  const pick = () => {
+    const p = warmPoolRef.current
+    return p.length ? p[Math.floor(Math.random() * p.length)] : null
+  }
+  const pickDistinct = () => {
+    const p = warmPoolRef.current
+    const taken = new Set(lockedDishesRef.current.map(d => d && d.id))
+    const avail = p.filter(d => !taken.has(d.id))
+    const src = avail.length ? avail : p
+    return src.length ? src[Math.floor(Math.random() * src.length)] : null
+  }
+
+  // Cats stop (video ends) → burst effect → assign final dishes → reveal choices
+  const handleStop = useCallback(() => {
+    if (phaseRef.current !== 'rolling' || stopHandledRef.current) return
+    stopHandledRef.current = true
+    if (!mountedRef.current) return
+    clearTimers()
+    const final = []
+    lockedDishesRef.current = []
+    for (let i = 0; i < CAT_PATHS.length; i++) {
+      const d = pickDistinct()
+      final.push(d)
+      if (d) lockedDishesRef.current.push(d)
+    }
+    lockedRef.current = Array.from({ length: CAT_PATHS.length }, () => true)
+    setLocked(Array.from({ length: CAT_PATHS.length }, () => true))
+    setBadges(final)
+    setPhase('stopping')
+    play('tick', 0.4)
+    const id = window.setTimeout(() => {
+      if (!mountedRef.current) return
+      play('reveal', 0.8)
+      setPhase('revealed')
+    }, 850)
+    timersRef.current.push(id)
+  }, [play, clearTimers])
+
   // Time-synced follower: badges follow real-site cat paths with the video playhead
   useEffect(() => {
     let raf = 0
@@ -145,6 +184,7 @@ export default function HoiMeo() {
     unlockAudio()
     clearTimers()
     setError('')
+    stopHandledRef.current = false
     setPhase('rolling')
     lockedRef.current = Array.from({ length: CAT_PATHS.length }, () => false)
     lockedDishesRef.current = []
@@ -158,50 +198,18 @@ export default function HoiMeo() {
       v.play().catch(() => {})
     }
 
-    // Live reads so a cold-start refill still feeds the roll
-    const pick = () => {
-      const p = warmPoolRef.current
-      return p.length ? p[Math.floor(Math.random() * p.length)] : null
-    }
-    const pickDistinct = () => {
-      const p = warmPoolRef.current
-      const taken = new Set(lockedDishesRef.current.map(d => d && d.id))
-      const avail = p.filter(d => !taken.has(d.id))
-      const src = avail.length ? avail : p
-      return src.length ? src[Math.floor(Math.random() * src.length)] : null
-    }
-
-    // All badges keep rolling until each one locks
+    // All badges keep rolling the whole time the cats are moving, stop only
+    // when the video actually ends and the cats come to a halt
     const rollId = window.setInterval(() => {
       if (!mountedRef.current) return
       setBadges(prev => prev.map((d, i) => (lockedRef.current[i] ? d : pick() || d)))
     }, 280)
     timersRef.current.push(rollId)
 
-    // Staggered locks scheduled from click time, like the reference: ~4s, ~7s, ~10s
-    LOCK_AT.forEach((ms, i) => {
-      const id = window.setTimeout(() => {
-        if (!mountedRef.current) return
-        const d = pickDistinct()
-        lockedRef.current[i] = true
-        setLocked(prev => { const n = [...prev]; n[i] = true; return n })
-        setBadges(prev => {
-          const n = [...prev]
-          if (d) { n[i] = d; lockedDishesRef.current.push(d) }
-          return n
-        })
-        play('tick', 0.3)
-      }, ms)
-      timersRef.current.push(id)
-    })
-
-    const doneId = window.setTimeout(() => {
-      if (!mountedRef.current) return
-      clearInterval(rollId)
-      play('reveal', 0.8)
-      setPhase('revealed')
-    }, LOCK_AT[LOCK_AT.length - 1] + 400)
-    timersRef.current.push(doneId)
+    // Safety net: if 'ended' never fires (stall/server hiccup), force a stop
+    const durMs = v && isFinite(v.duration) && v.duration > 0 ? v.duration * 1000 : 11800
+    const safetyId = window.setTimeout(() => { handleStop() }, durMs + 300)
+    timersRef.current.push(safetyId)
 
     // Cold-start: pool not warmed yet — refill so the live roll picks it up
     if (!warmPoolRef.current.length) {
@@ -210,10 +218,11 @@ export default function HoiMeo() {
         if (fresh.length) warmPoolRef.current = fresh
       } catch {}
     }
-  }, [phase, unlockAudio, play, clearTimers])
+  }, [phase, unlockAudio, play, clearTimers, handleStop])
 
   const reset = useCallback(() => {
     clearTimers()
+    stopHandledRef.current = false
     const v = videoRef.current
     if (v) { try { v.pause(); v.currentTime = 0 } catch {} }
     lockedRef.current = Array.from({ length: CAT_PATHS.length }, () => false)
@@ -224,9 +233,9 @@ export default function HoiMeo() {
   }, [clearTimers])
 
   return (
-    <div className={`cat-stage ${phase === 'rolling' ? 'rolling' : ''} ${phase === 'revealed' ? 'showing-results results-entering' : ''}`}>
+    <div className={`cat-stage ${phase === 'rolling' ? 'rolling' : ''} ${phase === 'stopping' ? 'stopping' : ''} ${phase === 'revealed' ? 'showing-results results-entering' : ''}`}>
       <div className="cat-video-wrap">
-        <video ref={videoRef} src={VIDEO_URL} muted={muted} playsInline preload="auto" poster="/images/fallback.svg" />
+        <video ref={videoRef} src={VIDEO_URL} muted={muted} playsInline preload="auto" poster="/images/fallback.svg" onEnded={handleStop} />
         {CAT_PATHS.map((_, i) => {
             const dish = badges[i]
             const isLocked = locked[i]
@@ -237,8 +246,8 @@ export default function HoiMeo() {
               <div
                 key={i}
                 ref={el => { badgeRefs.current[i] = el }}
-                className={`cat-badge ${phase === 'rolling' ? 'rolling' : ''} ${isLocked ? 'locked' : ''} ${dish ? 'ready' : 'waiting'}`}
-                style={{ '--cat-tier-color': tierColor }}
+                className={`cat-badge ${phase === 'rolling' ? 'rolling' : ''} ${phase === 'stopping' ? 'stopping' : ''} ${isLocked ? 'locked' : ''} ${dish ? 'ready' : 'waiting'}`}
+                style={{ '--cat-tier-color': tierColor, '--bi': i }}
               >
                 {isLocked && (<><div className="cat-lock-ring" /><div className="cat-lock-sparks" /></>)}
                 <div className="cat-badge-content">
@@ -262,7 +271,7 @@ export default function HoiMeo() {
           {debug && <div ref={debugRef} className="cat-debug-hud" />}
       </div>
 
-      {phase !== 'revealed' && (
+      {(phase === 'idle' || phase === 'rolling') && (
         <div className="cat-kick-wrap">
           <button className="cat-kick" onClick={kick} disabled={phase !== 'idle'} type="button" aria-busy={phase === 'rolling'}>
             {phase === 'rolling' ? 'ĐANG QUAY...' : 'NHỜ MÈO CHỌN MÓN ↗'}
@@ -272,6 +281,7 @@ export default function HoiMeo() {
 
       {error && <div className="cat-status cat-error">{error}</div>}
       {phase === 'rolling' && <div className="cat-status">🎰 Mèo đang chọn món...</div>}
+      {phase === 'stopping' && <div className="cat-status">🐟 Mèo đã dừng — chốt món!</div>}
       {phase === 'idle' && <div className="cat-status">Bấm để nhờ mèo chọn món trưa nay!</div>}
 
       {phase === 'revealed' && (
